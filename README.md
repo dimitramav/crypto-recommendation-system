@@ -1,2 +1,2 @@
-./main -d sample datasets/Ergasia 1/siftsmall/input_small -q sample datasets/Ergasia 1/siftsmall/query_small -o output_file
+./main -d sample_datasets/Ergasia_1/siftsmall/input_small -q sample_datasets/Ergasia_1/siftsmall/query_small -o output_file
 
