@@ -5,6 +5,11 @@
 
 using namespace std;
 
+void make_table_ht(double ** ,int,int,int);
+void make_table_hv(vector <double> **, int, int, int);
+void print_table_ht(double ** , int ,int);
+void print_table_hv(vector <double> **, int, int, int);
+
 class FunctionH{
 private:
 	vector<int> vh;
@@ -26,3 +31,4 @@ public:
 	static int no_of_dataset;
 	void print_vector();
 };
+

@@ -2,17 +2,72 @@
 #include <sstream>
 #include <iterator>
 #include <string>
+#include <random>
 #include "lsh_euclidean.h"
+#include <cmath>
+
 
 using namespace std;
 
+/* helper functions */
 
+void make_table_ht(double ** ht,int w,int rows,int columns)
+{
+	default_random_engine generator;
+	uniform_real_distribution<double> distribution(0.0,w);
+	for (int i=0; i<rows; i++)
+		for(int x=0; x<columns; x++)
+			ht[i][x]=distribution(generator);
+   	return;
+}
+
+void print_table_ht(double ** ht,int rows,int columns)
+{
+	for (int i=0; i<rows; i++)
+	{
+		for(int x=0; x<columns; x++)
+			cout << ht[i][x]<< "   ";
+		cout << endl;
+	}
+   	return;	
+}
+void make_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+{	
+	default_random_engine generator;
+  	normal_distribution<double> distribution(0.0,1.0);
+	for (int i=0; i<rows; i++)
+		for(int x=0; x<columns; x++)
+		{
+			for (int z=0; z<dimension; z++)
+			{
+  				hv[i][x].push_back(distribution(generator));  				
+			}
+		}
+	return;
+}
+
+void print_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+{	
+	for (int i=0; i<rows; i++)
+		for(int x=0; x<columns; x++)
+		{
+			for (int z=0; z<dimension; z++)
+			{				
+				copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
+			}
+			getchar();
+		}
+	return;
+}
 /* h function */
 
 FunctionH::FunctionH(int k){
 
 }
 
+FunctionH::~FunctionH(){
+
+}
 
 
 
@@ -39,10 +94,15 @@ DataVector::DataVector(string line,string vector_name,int k)
 		v.push_back( number );
 
 	/* 3. initialize array of h */
-	for (int i=0;i<number_of_hashfunctions;i++)
+	for (int i=0;i<k;i++)
 	{
-		cout << "hi" << endl;
+		//cout << "hi" << endl;
 	}
+}
+
+DataVector::~DataVector()
+{
+	
 }
 
 void DataVector::print_vector()
