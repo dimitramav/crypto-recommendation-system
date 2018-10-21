@@ -21,6 +21,8 @@ int main(int argc, char * argv[])
 	string vector_value;
 	int number_of_hashfunctions;
 	int number_of_hashtables;
+	vector <double> ** hv;
+	vector <DataVector> dataset_vectors;
 
 /* 1. READ ARGUREMENTS */
 	while ((option = getopt (argc, argv, "d:q:k:L:o:")) != -1)
@@ -91,15 +93,20 @@ int main(int argc, char * argv[])
 				}
 			}
 			/* TABLE FOR v */
-			vector <double> ** hv;
 			hv = new vector <double> * [number_of_hashfunctions];
 			for(int i = 0;i<number_of_hashtables;i++)
 				hv[i] = new vector <double> [number_of_hashtables];
 			make_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
-			print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
+			//print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 		}
-		DataVector test = DataVector(line,"item_d",number_of_hashfunctions);
+		DataVector test = DataVector(line,"item_d",number_of_hashfunctions,hv,ht,w);
+		dataset_vectors.push_back(test); 
+
 		//test.print_vector();    
+		
+	}
+	for (i=0;i<L;i++)
+	{
 		
 	}  
     //Vector * test= new Vector();

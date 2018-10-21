@@ -3,8 +3,11 @@
 #include <iterator>
 #include <string>
 #include <random>
-#include "lsh_euclidean.h"
 #include <cmath>
+#include <numeric>
+#include <vector>
+#include "lsh_euclidean.h"
+
 
 
 using namespace std;
@@ -77,7 +80,7 @@ int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 
-DataVector::DataVector(string line,string vector_name,int k)
+DataVector::DataVector(string line,string vector_name,int k, vector <double> ** hv, double ** t, int w)
 {
 	int number;
 	/* 1.initialize name */
@@ -96,8 +99,12 @@ DataVector::DataVector(string line,string vector_name,int k)
 	/* 3. initialize array of h */
 	for (int i=0;i<k;i++)
 	{
-		//cout << "hi" << endl;
+
+		h.push_back(floor((inner_product(v.begin(),v.end(),hv[0][i].begin(),0) + t[0][i] )/w));   //ALLAKSE TO GIA L PINAKES 
 	}
+	copy(h.begin(),h.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	getchar();
+
 }
 
 DataVector::~DataVector()

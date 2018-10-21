@@ -23,9 +23,9 @@ class DataVector{
 private:
 	string name;
 	vector<int> v;
-	vector<FunctionH> h;
+	vector<int> h; //function g
 public:
-	DataVector(string,string,int);
+	DataVector(string,string,int,vector <double> **, double **,int);
 	~DataVector();
 	static int no_of_queryset;
 	static int no_of_dataset;
