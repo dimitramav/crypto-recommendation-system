@@ -23,6 +23,10 @@ int main(int argc, char * argv[])
 	int number_of_hashtables;
 	vector <double> ** hv;
 	vector <DataVector> dataset_vectors;
+	//vector <HashTable *> hashtables_vector;
+	vector <unordered_map <string,string> *> hashtables_vector;
+	unordered_map <string,DataVector*> test;
+
 
 /* 1. READ ARGUREMENTS */
 	while ((option = getopt (argc, argv, "d:q:k:L:o:")) != -1)
@@ -66,6 +70,15 @@ int main(int argc, char * argv[])
 		number_of_hashtables = L;
 	const int w = 4;
 
+
+	/* 2. CREATE HASHTABLES */
+	for (int i=0; i< number_of_hashtables ;i ++)
+	{
+		//HashTable * hash= new HashTable();
+		unordered_map <string,string> * hash = new unordered_map <string,string>;
+		hashtables_vector.push_back(hash);
+	}
+
 	/* 2. TABLE FOR t */
 
 	double ** ht;
@@ -92,23 +105,40 @@ int main(int argc, char * argv[])
 					d++;               //find dimension
 				}
 			}
-			/* TABLE FOR v */
+			/*4. TABLE FOR v */
 			hv = new vector <double> * [number_of_hashfunctions];
 			for(int i = 0;i<number_of_hashtables;i++)
 				hv[i] = new vector <double> [number_of_hashtables];
 			make_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 			//print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 		}
-		DataVector test = DataVector(line,"item_d",number_of_hashfunctions,hv,ht,w);
-		dataset_vectors.push_back(test); 
 
+		DataVector * datapoint = new DataVector(line,"item_d",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		//
+		for (int i=0;i<1; i++)
+		{
+			string key = datapoint->g_accessor(i,1);
+			string name = datapoint->name_accessor();
+			//(hashtables_vector.at(i)->hashtable_accessor())[key]=name;
+			//cout << (hashtables_vector.at(i)->hashtable_accessor())[key];
+ 			//(hashtables_vector[i]->hashtable_accessor()).insert(make_pair(key,name));
+ 			test.insert(make_pair(key,datapoint));
+
+		}
 		//test.print_vector();    
 		
 	}
-	for (i=0;i<L;i++)
+	print_hashtable(test);
+	/*for (int i=0; i<number_of_hashtables; i++)
+	{
+		cout << i << " HASH TABLE"<< endl;
+	 	hashtables_vector.at(i)->print_hashtable();
+	}*/
+
+	/*for (i=0;i<L;i++)
 	{
 		
-	}  
+	} */ 
     //Vector * test= new Vector();
 
 

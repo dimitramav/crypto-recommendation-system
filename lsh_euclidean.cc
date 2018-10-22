@@ -6,6 +6,8 @@
 #include <cmath>
 #include <numeric>
 #include <vector>
+#include <unordered_map>
+#include <sstream>
 #include "lsh_euclidean.h"
 
 
@@ -62,17 +64,45 @@ void print_table_hv( vector <double> ** hv, int dimension, int rows, int columns
 		}
 	return;
 }
-/* h function */
 
-FunctionH::FunctionH(int k){
+void print_hashtable(unordered_map<string,DataVector *> htable){
 
+  	cout << "mymap's buckets contain:\n";
+  	for ( unsigned i = 0; i < htable.bucket_count(); ++i) {
+    	cout << "bucket #" << i << " contains:";
+    	for ( auto local_it = htable.begin(i); local_it!= htable.end(i); ++local_it )
+      		cout << " " << local_it->first << ":" << local_it->second->name_accessor();
+    	cout << std::endl;
+
+	}
+	cout << endl;
 }
 
-FunctionH::~FunctionH(){
+/* HashTable */
 
+HashTable::HashTable(){}
+
+unordered_map<string,string> HashTable::hashtable_accessor(){
+	return htable;
 }
 
+void HashTable::print_hashtable(){
 
+	cout << "mymap contains:";
+  	for ( auto it = htable.begin(); it != htable.end(); ++it )
+    	cout << " " << it->first << ":" << it->second;
+ 	cout << endl;
+
+  	cout << "mymap's buckets contain:\n";
+  	for ( unsigned i = 0; i < htable.bucket_count(); ++i) {
+    	cout << "bucket #" << i << " contains:";
+    	/*for ( auto local_it = htable.begin(i); local_it!= htable.end(i); ++local_it )
+      		cout << " " << local_it->first << ":" << local_it->second;
+    	cout << std::endl;*/
+
+	}
+	cout << endl;
+}
 
 
 /* DataVector */
@@ -80,7 +110,7 @@ int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 
-DataVector::DataVector(string line,string vector_name,int k, vector <double> ** hv, double ** t, int w)
+DataVector::DataVector(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
 {
 	int number;
 	/* 1.initialize name */
@@ -97,14 +127,42 @@ DataVector::DataVector(string line,string vector_name,int k, vector <double> ** 
 		v.push_back( number );
 
 	/* 3. initialize array of h */
-	for (int i=0;i<k;i++)
-	{
+	for (int x=0;x<L; x++){
+		for (int i=0;i<k;i++)
+		{
 
-		h.push_back(floor((inner_product(v.begin(),v.end(),hv[0][i].begin(),0) + t[0][i] )/w));   //ALLAKSE TO GIA L PINAKES 
+			g.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[0][i] )/w));   //ALLAKSE TO GIA L PINAKES 
+		}
 	}
-	copy(h.begin(),h.end(),std::ostream_iterator<double>(std::cout, "  " ));
-	getchar();
+	//copy(h.begin(),h.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
+}
+
+string DataVector::g_accessor(int L, int k)  //convert g vector for a particular hash table L to string 
+{
+	//cout << "whole g " << endl;
+
+	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	//getchar();
+	vector<int>::const_iterator first = g.begin() + k*L;
+	vector<int>:: const_iterator last = g.begin() + k*L +k;
+	vector<int> specific_g(first, last);
+	//cout << "specific_g" << endl;
+	//copy(specific_g.begin(),specific_g.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	//getchar();
+	stringstream ss;
+	for(size_t i = 0; i < specific_g.size(); ++i)
+	{
+  		if(i != 0)
+    		ss << " ";
+  		ss << specific_g[i];
+		}
+		string g_string = ss.str();
+		return g_string;
+}
+
+string DataVector::name_accessor(){
+	return name;
 }
 
 DataVector::~DataVector()
