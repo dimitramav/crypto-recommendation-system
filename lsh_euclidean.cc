@@ -108,17 +108,21 @@ void make_table_ht(double ** ht,int w,int rows,int columns)
 } 
 
 
-vector <DataVector *> rangesearch(int current_hashtable, int k,HashTable * hashtable,double radius,DataVector *querypoint)
+vector <DataVector *> rangesearch(int L, int k,vector <HashTable * > * hashtables,double radius,DataVector *querypoint)
 {
 	vector <DataVector * > neighbours;
-	int bucket_num=hashtable->bucket (querypoint->g_accessor(current_hashtable,k)); //find the bucket with the key of the querypoint
-	for ( auto it = hashtable->begin(bucket_num); it!= hashtable->end(bucket_num); ++it)
+	for (int i=0;i<L;i++)
 	{
-		double euclidean_distance=vectors_distance(querypoint->point_accessor(),it->second->point_accessor());
-		if(euclidean_distance<radius)
+		int bucket_num=(*hashtables)[i]->bucket (querypoint->g_accessor(i,k)); //find the bucket with the key of the querypoint
+		for ( auto it = (*hashtables)[i]->begin(bucket_num); it!= (*hashtables)[i]->end(bucket_num); ++it)
 		{
-			neighbours.push_back(it->second);
-			//cout<< it->second->name_accessor() ;
+			double euclidean_distance=vectors_distance(querypoint->point_accessor(),it->second->point_accessor());
+			if(euclidean_distance<radius)
+			{
+				neighbours.push_back(it->second);
+				cout<< it->second->name_accessor() ;
+			}
+			cout << endl;
 		}
 	}
 	return neighbours;
@@ -130,6 +134,8 @@ DataVector * approximateNN(int * minimum_distance,int L, int k,int current_hasht
 	DataVector * nearest_neighbour;
 	double euclidean_distance;
 	int points_checked;
+	int minimum_distance=numeric_limits<int>::max(); //initialize minimum distance for approximateNN
+	
 	points_checked=0;
 	int bucket_num=hashtable->bucket (querypoint->g_accessor(current_hashtable,k)); //find the bucket with the key of the querypoint
 	for ( auto it = hashtable->begin(bucket_num); it!= hashtable->end(bucket_num); ++it)

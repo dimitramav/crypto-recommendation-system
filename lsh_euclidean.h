@@ -34,7 +34,7 @@ void print_table_hv(vector <double> **, int, int, int);
 void print_hashtable(HashTable *);
 double find_radius(string line);
 double	vectors_distance(vector<int> ,vector<int>);
-vector <DataVector *> rangesearch(int,int,HashTable *, double,DataVector *);
+vector <DataVector *> rangesearch(int,int,vector <HashTable *> *, double,DataVector *);
 DataVector * approximateNN(int *, int,int,int,HashTable *,DataVector *);
 
 

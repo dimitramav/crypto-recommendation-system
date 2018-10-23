@@ -6,7 +6,6 @@
 #include <vector>
 #include <sstream>  
 #include <iterator>
-#include <limits>
 #include <cctype>
 #include <map>
 #include "lsh_euclidean.h"
@@ -29,7 +28,7 @@ int main(int argc, char * argv[])
 	double radius;
 	vector <DataVector *> dataset_vectors;
 	//vector <HashTable *> hashtables_vector;
-	vector <HashTable *> hashtables_vector;
+	vector <HashTable *> * hashtables_vector;
 	//unordered_map <string,DataVector*> test;
 
 
@@ -126,11 +125,12 @@ int main(int argc, char * argv[])
 	}
 
 	/* 4. CREATE HASHTABLES */
+	hashtables_vector = new vector <HashTable *> ;
 	for (int i=0; i< number_of_hashtables ;i ++)
 	{
 		//HashTable * hash= new HashTable();
 		HashTable * hash = new HashTable;
-		hashtables_vector.push_back(hash);
+		hashtables_vector->push_back(hash);
 	}
 
 	for (int x=0;x<dataset_vectors.size();x++)
@@ -140,7 +140,7 @@ int main(int argc, char * argv[])
 		{
 			string key = datapoint->g_accessor(i,number_of_hashfunctions);
 			string name = datapoint->name_accessor();
-			hashtables_vector[i]->insert(make_pair(key,datapoint));
+			(*hashtables_vector)[i]->insert(make_pair(key,datapoint));
 
 		}
 	}
@@ -172,19 +172,18 @@ int main(int argc, char * argv[])
 
    		}
    		DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-		int minimum_distance=numeric_limits<int>::max(); //initialize minimum distance for approximateNN
-		DataVector * nearest_neighbour=NULL; //initialize nearest neighbour for approximateNN
-		DataVector * return_vector;
-		for (int i=0;i<number_of_hashtables;i++)
+		/*for (int i=0;i<number_of_hashtables;i++)
 		{
 			rangesearch(i,number_of_hashfunctions,hashtables_vector[i],radius,querypoint); 
-			return_vector=approximateNN(&minimum_distance,i,number_of_hashfunctions,number_of_hashtables,hashtables_vector[i],querypoint);
+			/*return_vector=approximateNN(&minimum_distance,i,number_of_hashfunctions,number_of_hashtables,hashtables_vector[i],querypoint);
 			if(return_vector!=NULL)
 			{
 				nearest_neighbour=return_vector;
 			}
 
-		}
+		}*/
+		rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+		pproximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
 
    	}
 
