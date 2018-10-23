@@ -20,22 +20,21 @@ public:
 	void print_vector();
 	string g_accessor(int,int);
 	string name_accessor();
+	vector <int> point_accessor();
 };
 
+	
 
-class HashTable{
-private:
-	unordered_map<string,string> htable;
-public:
-	HashTable();
-	~HashTable();
-	unordered_map<string, string> hashtable_accessor();
-	void print_hashtable();
-
-};
+typedef unordered_map <string,DataVector * > HashTable;
 
 void make_table_ht(double ** ,int,int,int);
 void make_table_hv(vector <double> **, int, int, int);
 void print_table_ht(double ** , int ,int);
 void print_table_hv(vector <double> **, int, int, int);
-void print_hashtable(unordered_map<string,DataVector *>);
+void print_hashtable(HashTable *);
+double find_radius(string line);
+double	vectors_distance(vector<int> ,vector<int>);
+vector <DataVector *> rangesearch(int,int,HashTable *, double,DataVector *);
+DataVector * approximateNN(int *, int,int,int,HashTable *,DataVector *);
+
+

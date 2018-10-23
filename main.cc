@@ -6,8 +6,11 @@
 #include <vector>
 #include <sstream>  
 #include <iterator>
-#include "lsh_euclidean.h"
+#include <limits>
 #include <cctype>
+#include <map>
+#include "lsh_euclidean.h"
+
 using namespace std;
 
 int main(int argc, char * argv[])
@@ -21,11 +24,13 @@ int main(int argc, char * argv[])
 	string vector_value;
 	int number_of_hashfunctions;
 	int number_of_hashtables;
+	int n=0;
 	vector <double> ** hv;
-	vector <DataVector> dataset_vectors;
+	double radius;
+	vector <DataVector *> dataset_vectors;
 	//vector <HashTable *> hashtables_vector;
-	vector <unordered_map <string,string> *> hashtables_vector;
-	unordered_map <string,DataVector*> test;
+	vector <HashTable *> hashtables_vector;
+	//unordered_map <string,DataVector*> test;
 
 
 /* 1. READ ARGUREMENTS */
@@ -68,16 +73,7 @@ int main(int argc, char * argv[])
 		number_of_hashtables = 5;
 	else
 		number_of_hashtables = L;
-	const int w = 4;
-
-
-	/* 2. CREATE HASHTABLES */
-	for (int i=0; i< number_of_hashtables ;i ++)
-	{
-		//HashTable * hash= new HashTable();
-		unordered_map <string,string> * hash = new unordered_map <string,string>;
-		hashtables_vector.push_back(hash);
-	}
+	const int w = 200;
 
 	/* 2. TABLE FOR t */
 
@@ -98,6 +94,7 @@ int main(int argc, char * argv[])
    	int d=0;
 	while (getline(dataset, line))  //read dataset line by line
 	{
+		n++;
 		//first vector
 		if(d==0){
 			for(int i = 0; i < line.length(); i++){
@@ -112,35 +109,86 @@ int main(int argc, char * argv[])
 			make_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 			//print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 		}
-
-		DataVector * datapoint = new DataVector(line,"item_d",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-		//
-		for (int i=0;i<1; i++)
+		DataVector * datapoint = new DataVector(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		dataset_vectors.push_back(datapoint);
+		/*for (int i=0;i<number_of_hashtables; i++)
 		{
-			string key = datapoint->g_accessor(i,1);
+			string key = datapoint->g_accessor(i,number_of_hashfunctions);
 			string name = datapoint->name_accessor();
 			//(hashtables_vector.at(i)->hashtable_accessor())[key]=name;
 			//cout << (hashtables_vector.at(i)->hashtable_accessor())[key];
- 			//(hashtables_vector[i]->hashtable_accessor()).insert(make_pair(key,name));
- 			test.insert(make_pair(key,datapoint));
+ 			hashtables_vector[i]->insert(make_pair(key,datapoint));
+ 			//test.insert(make_pair(key,datapoint)); It works!
 
-		}
+		}*/	
 		//test.print_vector();    
 		
 	}
-	print_hashtable(test);
-	/*for (int i=0; i<number_of_hashtables; i++)
+
+	/* 4. CREATE HASHTABLES */
+	for (int i=0; i< number_of_hashtables ;i ++)
+	{
+		//HashTable * hash= new HashTable();
+		HashTable * hash = new HashTable;
+		hashtables_vector.push_back(hash);
+	}
+
+	for (int x=0;x<dataset_vectors.size();x++)
+	{
+		DataVector * datapoint=dataset_vectors[x];
+		for (int i=0;i< number_of_hashtables; i++)
+		{
+			string key = datapoint->g_accessor(i,number_of_hashfunctions);
+			string name = datapoint->name_accessor();
+			hashtables_vector[i]->insert(make_pair(key,datapoint));
+
+		}
+	}
+
+	/* PRINT HASHTABLES 
+	for (int i=0; i<number_of_hashtables; i++)
 	{
 		cout << i << " HASH TABLE"<< endl;
-	 	hashtables_vector.at(i)->print_hashtable();
+		print_hashtable(hashtables_vector[i]);
+		getchar();
 	}*/
 
-	/*for (i=0;i<L;i++)
+	/* 5. READ QUERYSET */
+	queryset.open(queryset_path.c_str());  //convert string to const char *
+	if (!queryset.is_open())
 	{
-		
-	} */ 
-    //Vector * test= new Vector();
+		cout << "Failed to open file." << endl;
+		return 1;
+	}
+	n=0;
+   	while (getline(queryset, line))  //read dataset line by line
+   	{
+   		//see if radius is defined 
+   		if (n==0)
+   		{
+   			radius=find_radius(line);
+   			n++;
+   			continue;
+
+   		}
+   		DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		int minimum_distance=numeric_limits<int>::max(); //initialize minimum distance for approximateNN
+		DataVector * nearest_neighbour=NULL; //initialize nearest neighbour for approximateNN
+		DataVector * return_vector;
+		for (int i=0;i<number_of_hashtables;i++)
+		{
+			rangesearch(i,number_of_hashfunctions,hashtables_vector[i],radius,querypoint); 
+			return_vector=approximateNN(&minimum_distance,i,number_of_hashfunctions,number_of_hashtables,hashtables_vector[i],querypoint);
+			if(return_vector!=NULL)
+			{
+				nearest_neighbour=return_vector;
+			}
+
+		}
+
+   	}
 
 
-	return 0;
-}
+
+   	return 0;
+   }
