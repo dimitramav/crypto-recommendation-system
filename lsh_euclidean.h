@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
+#include <map>
 #include "constants.h"
 
 using namespace std;
@@ -35,6 +36,7 @@ void print_hashtable(HashTable *);
 double find_radius(string line);
 double	vectors_distance(vector<int> ,vector<int>);
 vector <DataVector *> rangesearch(int,int,vector <HashTable *> *, double,DataVector *);
-DataVector * approximateNN(int *, int,int,int,HashTable *,DataVector *);
+map <DataVector *, double> approximateNN( int,int,vector <HashTable *> *,DataVector *);
+map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *);
 
 

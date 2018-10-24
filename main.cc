@@ -172,19 +172,9 @@ int main(int argc, char * argv[])
 
    		}
    		DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-		/*for (int i=0;i<number_of_hashtables;i++)
-		{
-			rangesearch(i,number_of_hashfunctions,hashtables_vector[i],radius,querypoint); 
-			/*return_vector=approximateNN(&minimum_distance,i,number_of_hashfunctions,number_of_hashtables,hashtables_vector[i],querypoint);
-			if(return_vector!=NULL)
-			{
-				nearest_neighbour=return_vector;
-			}
-
-		}*/
-		rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
-		pproximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
-
+		//rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+		//approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
+		//trueNN(dataset_vectors,querypoint);
    	}
 
 
