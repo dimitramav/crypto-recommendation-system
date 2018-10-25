@@ -7,6 +7,8 @@
 #include <sstream>  
 #include <iterator>
 #include <cctype>
+#include <set>
+#include <list>
 #include <map>
 #include "lsh_euclidean.h"
 
@@ -27,8 +29,8 @@ int main(int argc, char * argv[])
 	vector <double> ** hv;
 	double radius;
 	vector <DataVector *> dataset_vectors;
+	set <DataVector *> neighbours_rangesearch;
 	//vector <HashTable *> hashtables_vector;
-	vector <HashTable *> * hashtables_vector;
 	//unordered_map <string,DataVector*> test;
 
 
@@ -72,10 +74,9 @@ int main(int argc, char * argv[])
 		number_of_hashtables = 5;
 	else
 		number_of_hashtables = L;
-	const int w = 200;
+	const int w = 400;
 
 	/* 2. TABLE FOR t */
-
 	double ** ht;
 	ht = new double * [number_of_hashfunctions];
 	for(int i = 0;i<number_of_hashtables;i++)
@@ -120,18 +121,18 @@ int main(int argc, char * argv[])
  			//test.insert(make_pair(key,datapoint)); It works!
 
 		}*/	
-		//test.print_vector();    
+		//test.print_vector();   
+
 		
 	}
-
-	/* 4. CREATE HASHTABLES */
-	hashtables_vector = new vector <HashTable *> ;
+	/* 4. CREATE HASHTABLES 
 	for (int i=0; i< number_of_hashtables ;i ++)
 	{
 		//HashTable * hash= new HashTable();
 		HashTable * hash = new HashTable;
-		hashtables_vector->push_back(hash);
-	}
+		hashtables_vector.push_back(hash);
+	}*/
+	HashTable hashtables_vector[number_of_hashtables];
 
 	for (int x=0;x<dataset_vectors.size();x++)
 	{
@@ -140,11 +141,12 @@ int main(int argc, char * argv[])
 		{
 			string key = datapoint->g_accessor(i,number_of_hashfunctions);
 			string name = datapoint->name_accessor();
-			(*hashtables_vector)[i]->insert(make_pair(key,datapoint));
+			//hashtables_vector[i]->insert(make_pair(key,datapoint));
+			hashtables_vector[i][key].push_back(datapoint);
+
 
 		}
 	}
-
 	/* PRINT HASHTABLES 
 	for (int i=0; i<number_of_hashtables; i++)
 	{
@@ -152,7 +154,6 @@ int main(int argc, char * argv[])
 		print_hashtable(hashtables_vector[i]);
 		getchar();
 	}*/
-
 	/* 5. READ QUERYSET */
 	queryset.open(queryset_path.c_str());  //convert string to const char *
 	if (!queryset.is_open())
@@ -172,9 +173,13 @@ int main(int argc, char * argv[])
 
    		}
    		DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-		//rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
-		//approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
-		//trueNN(dataset_vectors,querypoint);
+   		neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+   		for (  set<DataVector *>::iterator it = neighbours_rangesearch.begin(); it != neighbours_rangesearch.end(); ++it) {
+   			cout << (*it)->name_accessor();
+   		}
+   		approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
+   		trueNN(dataset_vectors,querypoint);
+   		getchar();
    	}
 
 

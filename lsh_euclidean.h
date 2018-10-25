@@ -3,6 +3,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <map>
+#include <list>
 #include "constants.h"
 
 using namespace std;
@@ -26,7 +27,7 @@ public:
 
 	
 
-typedef unordered_map <string,DataVector * > HashTable;
+typedef unordered_map <string, list <DataVector *> >HashTable;
 
 void make_table_ht(double ** ,int,int,int);
 void make_table_hv(vector <double> **, int, int, int);
@@ -35,8 +36,8 @@ void print_table_hv(vector <double> **, int, int, int);
 void print_hashtable(HashTable *);
 double find_radius(string line);
 double	vectors_distance(vector<int> ,vector<int>);
-vector <DataVector *> rangesearch(int,int,vector <HashTable *> *, double,DataVector *);
-map <DataVector *, double> approximateNN( int,int,vector <HashTable *> *,DataVector *);
+set <DataVector *> rangesearch(int,int,HashTable *, double,DataVector *);
+map <DataVector *, double> approximateNN( int,int,HashTable * ,DataVector *);
 map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *);
 
 

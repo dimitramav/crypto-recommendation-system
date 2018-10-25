@@ -14,6 +14,8 @@
 #include <numeric>
 #include <limits>
 #include <map>
+#include <set>
+#include <list>
 #include "lsh_euclidean.h"
 
 
@@ -109,29 +111,27 @@ void make_table_ht(double ** ht,int w,int rows,int columns)
 } 
 
 
-vector <DataVector *> rangesearch(int L, int k,vector <HashTable * > * hashtables,double radius,DataVector *querypoint)
+set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius,DataVector *querypoint)
 {
-	vector <DataVector * > neighbours;
+	set <DataVector * > neighbours; //to avoid duplicates
 	for (int i=0;i<L;i++)
 	{
-		int bucket_num=(*hashtables)[i]->bucket (querypoint->g_accessor(i,k)); //find the bucket with the key of the querypoint
-		for ( auto it = (*hashtables)[i]->begin(bucket_num); it!= (*hashtables)[i]->end(bucket_num); ++it)
+		string key= querypoint->g_accessor(i,k);
+		for (auto v : hashtables[i][key])
 		{
-			double euclidean_distance=vectors_distance(querypoint->point_accessor(),it->second->point_accessor());
+        	double euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
 			if(euclidean_distance<radius)
 			{
-				neighbours.push_back(it->second);
-				//cout <<it->second->g_accessor(i,k)<<endl;
-				cout<< it->second->name_accessor()<< " " ;
+				//cout << (it->second)->g_accessor(i,k) << endl;
+				neighbours.insert(v);
 			}
 		}
 	}
-	cout << "end of neighbours"<< endl;
 	return neighbours;
 	//getchar(); 
 }
 
-map <DataVector *,double> approximateNN(int L, int k,vector <HashTable *>  * hashtables,DataVector *querypoint)
+map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,DataVector *querypoint)
 {
 	DataVector * neighbour;
 	double euclidean_distance;
@@ -141,20 +141,20 @@ map <DataVector *,double> approximateNN(int L, int k,vector <HashTable *>  * has
 	for (int i=0;i<L;i++)
 	{
 		points_checked=0;
-		int bucket_num=(*hashtables)[i]->bucket (querypoint->g_accessor(i,k)); //find the bucket with the key of the querypoint
-		for ( auto it = (*hashtables)[i]->begin(bucket_num); it!= (*hashtables)[i]->end(bucket_num); ++it)
+		string key= querypoint->g_accessor(i,k);
+		for ( auto v: hashtables[i][key])
 		{
 			if (points_checked> 3*L)
 			{
 				break;
 			}	 
-			euclidean_distance=vectors_distance(querypoint->point_accessor(),it->second->point_accessor());
+			euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
 			if(euclidean_distance<minimum_distance)
 			{
 				minimum_distance=euclidean_distance;
-				neighbour=it->second;
+				neighbour=v;
 			}
-			cout << it->second->name_accessor() << " "<< euclidean_distance << "||";
+			//cout << it->second->name_accessor() << " "<< euclidean_distance << "||";
 			points_checked++;
 		}
 	}
@@ -181,7 +181,6 @@ map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * que
 		}
 	}
 	cout << neighbour->name_accessor() <<" has nearest neighbour " << minimum_distance << endl;
-	getchar();
 	nearest_neighbour.insert ( pair<DataVector *,double>(neighbour,minimum_distance) );
 	return nearest_neighbour;
 
@@ -237,7 +236,7 @@ string DataVector::g_accessor(int current_hashtable, int k)  //convert g vector 
 	vector<int> specific_g(first, last);
 	//cout << "specific_g" << endl;
 	//copy(specific_g.begin(),specific_g.end(),std::ostream_iterator<double>(std::cout, "  " ));
-	getchar();
+	//getchar();
 	stringstream ss;
 	for(size_t i = 0; i < specific_g.size(); ++i)
 	{
