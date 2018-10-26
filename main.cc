@@ -31,8 +31,10 @@ int main(int argc, char * argv[])
 	double radius;
 	string metric;
 	vector <DataVector *> dataset_vectors;
+	vector <DataVector *>::iterator dataset_iterator;
 	set <DataVector *> neighbours_rangesearch;
 
+	string command;
 
 /* 1. READ ARGUREMENTS */
 	while ((option = getopt (argc, argv, "d:q:k:L:o:")) != -1)
@@ -79,10 +81,12 @@ int main(int argc, char * argv[])
 	/* 2. TABLE FOR t */
 	double ** ht;
 	ht = new double * [number_of_hashfunctions];
-	for(int i = 0;i<number_of_hashtables;i++)
+	for(int i = 0;i<number_of_hashfunctions;i++)
 		ht[i] = new double[number_of_hashtables];
-	make_table_ht(ht,w,number_of_hashtables,number_of_hashfunctions);
-	//print_table_ht(ht,number_of_hashtables,number_of_hashfunctions);
+	//double ht[number_of_hashtables][number_of_hashfunctions]
+	//array <array<double,number_of_hashfunctions>,number_of_hashtables> ht;
+	make_table_ht(ht,w,number_of_hashfunctions,number_of_hashtables);
+	//print_table_ht(ht,number_of_hashfunctions,number_of_hashtables);
 
    	/* 3. READ DATASET */
    	dataset.open(dataset_path.c_str());  //convert string to const char *
@@ -101,18 +105,18 @@ int main(int argc, char * argv[])
 			metric=find_metric(line);
 			/*4. TABLE FOR v */
 			hv = new vector <double> * [number_of_hashfunctions];
-			for(int i = 0;i<number_of_hashtables;i++)
+			for(int i = 0;i<number_of_hashfunctions;i++)
 				hv[i] = new vector <double> [number_of_hashtables];
-			make_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
-			//print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
+			make_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
+			//print_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
 		}
 		DataVector * datapoint = new DataVector(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 		dataset_vectors.push_back(datapoint);    
 		
 	}
+	dataset.close();
 	/* 4. CREATE HASHTABLES */
 	HashTable hashtables_vector[number_of_hashtables];
-
 	for (int x=0;x<dataset_vectors.size();x++)
 	{
 		DataVector * datapoint=dataset_vectors[x];
@@ -133,34 +137,57 @@ int main(int argc, char * argv[])
 		print_hashtable(hashtables_vector[i]);
 		getchar();
 	}*/
-	/* 5. READ QUERYSET */
-	queryset.open(queryset_path.c_str());  //convert string to const char *
-	if (!queryset.is_open())
-	{
-		cout << "Failed to open file." << endl;
-		return 1;
-	}
-	n=0;
-   	while (getline(queryset, line))  //read dataset line by line
-   	{
-   		//see if radius is defined 
-   		if (n==0)
+	/* 5. READ QUERYSET AGAIN AND AGAIN*/
+	do{
+   		if(!queryset_path.compare("no")) //end of program - Time to delete some structs
    		{
-   			radius=find_radius(line);
-   			n++;
-   			continue;
+   			//delete dataset
+   			for(dataset_iterator = dataset_vectors.begin(); dataset_iterator != dataset_vectors.end(); dataset_iterator++)    {
+   				delete *(dataset_iterator);
+   			}
+   			//delete t & v table
+   			for(int i = 0;i<number_of_hashfunctions;i++)
+   			{
+				delete ht[i];
+				cout << hv[i] <<endl;
+   			}
+   			delete ht;
+   			//delete hv;
 
+   			return 0;
    		}
-   		DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-   		neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
-   		for (  set<DataVector *>::iterator it = neighbours_rangesearch.begin(); it != neighbours_rangesearch.end(); ++it) {
-   			cout << (*it)->name_accessor();
-   		}
-   		approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
-   		trueNN(dataset_vectors,querypoint);
-   		getchar();
-   	}
+		queryset.open(queryset_path.c_str());  //convert string to const char *
+		if (!queryset.is_open())
+		{
+			cout << "Failed to open file." << endl;
+			return 1;
+		}
+		n=0;
+   		while (getline(queryset, line))  //read dataset line by line
+   		{
+   			//see if radius is defined 
+   			if (n==0)
+   			{
+   				radius=find_radius(line);
+   				n++;
+   				continue;
 
+   			}
+   			DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+   			cout << querypoint->name_accessor() <<endl;
+   			/*neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+   			for (  set<DataVector *>::iterator it = neighbours_rangesearch.begin(); it != neighbours_rangesearch.end(); ++it) {
+   				cout << (*it)->name_accessor();
+   			}
+   			approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
+   			trueNN(dataset_vectors,querypoint);
+   			getchar();*/
+   			delete querypoint;
+   		}
+   		queryset.close();
+   		cout << "Do you want to continue with different query_set?" <<endl;
+
+   	}while (getline(cin,queryset_path)); 
 
 
    	return 0;

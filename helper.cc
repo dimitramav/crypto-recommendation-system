@@ -31,103 +31,104 @@ void make_table_ht(double ** ht,int w,int rows,int columns)
 	for (int i=0; i<rows; i++)
 		for(int x=0; x<columns; x++)
 			ht[i][x]=distribution(generator);
-		return;
-	}
+	return;
+}
 
-	void print_table_ht(double ** ht,int rows,int columns)
+void print_table_ht(double ** ht,int rows,int columns)
+{
+	for (int i=0; i<rows; i++)
 	{
-		for (int i=0; i<rows; i++)
-		{
-			for(int x=0; x<columns; x++)
-				cout << ht[i][x]<< "   ";
+		for(int x=0; x<columns; x++)
+			cout << ht[i][x]<< "   ";
 			cout << endl;
-		}
-		return;	
 	}
-	void make_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
-	{	
-		default_random_engine generator;
-		normal_distribution<double> distribution(0.0,1.0);
-		for (int i=0; i<rows; i++)
-			for(int x=0; x<columns; x++)
-			{
-				for (int z=0; z<dimension; z++)
-				{
-					hv[i][x].push_back(distribution(generator));  				
-				}
-			}
-			return;
-		}
+	return;	
+}
 
-		void print_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
-		{	
-			for (int i=0; i<rows; i++)
-				for(int x=0; x<columns; x++)
-				{
-					for (int z=0; z<dimension; z++)
-					{				
-						copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
-					}
-					getchar();
-				}
-				return;
-			}
-
-			void print_hashtable(unordered_map<string,DataVector *> * htable){
-
-				cout << "mymap's buckets contain:\n";
-				for ( unsigned i = 0; i < htable->bucket_count(); ++i) {
-					cout << "bucket #" << i << " contains:";
-					for ( auto local_it = htable->begin(i); local_it!= htable->end(i); ++local_it )
-						cout << " " << local_it->first << ":" << local_it->second->name_accessor();
-					cout << std::endl;
-
-				}
-				cout << endl;
-			}
-
-			double find_radius(string line)
-			{
-				istringstream ss(line);
-				string::size_type sz;
-				istream_iterator<std::string> begin(ss), end;    		
-				vector<string> arrayTokens(begin, end);
-				if(arrayTokens[0].compare("Radius:")==0)
-				{
-   					return stod(arrayTokens[1],&sz); //cast string to double
-   				}
-   				return 0.0;
-   			}
-
-   			int find_dimension(string line)
-   			{
-   				int d=0;
-   				for(int i = 0; i < line.length(); i++)
-   				{
-   					if (isblank(line[i]))
-   					{
-						d++;               //find dimension
-					}
-				}
-			}
-
-			string find_metric(string line)
-			{
-				istringstream ss(line);
-				string::size_type sz;
-				istream_iterator<std::string> begin(ss), end;    		
-				vector<string> arrayTokens(begin, end);
-				if(arrayTokens[0].compare("@metric")==0)
-				{
-   					return arrayTokens[1]; //return metric
-   				}
-   				return "{euclidean}"; //default is euclidean
-   			}
-
-
-		double	vectors_distance(vector<int> a, vector<int> b)
+void make_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+{	
+	default_random_engine generator;
+	normal_distribution<double> distribution(0.0,1.0);
+	for (int i=0; i<rows; i++)
+		for(int x=0; x<columns; x++)
 		{
-			vector<double>	auxiliary;
+			for (int z=0; z<dimension; z++)
+			{
+				hv[i][x].push_back(distribution(generator));  				
+			}
+		}
+		return;
+}
+
+void print_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+{	
+	for (int i=0; i<rows; i++)
+		for(int x=0; x<columns; x++)
+		{
+			for (int z=0; z<dimension; z++)
+			{				
+				copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
+			}
+			getchar();
+		}			
+	return;
+}
+
+void print_hashtable(unordered_map<string,DataVector *> * htable)
+{
+	cout << "mymap's buckets contain:\n";
+	for ( unsigned i = 0; i < htable->bucket_count(); ++i) {
+		cout << "bucket #" << i << " contains:";
+		for ( auto local_it = htable->begin(i); local_it!= htable->end(i); ++local_it )
+			cout << " " << local_it->first << ":" << local_it->second->name_accessor();
+			cout << std::endl;
+
+		}
+		cout << endl;
+	}
+
+double find_radius(string line)
+{
+	istringstream ss(line);
+	string::size_type sz;
+	istream_iterator<std::string> begin(ss), end;    		
+	vector<string> arrayTokens(begin, end);
+	if(arrayTokens[0].compare("Radius:")==0)
+	{
+   		return stod(arrayTokens[1],&sz); //cast string to double
+   	}
+   	return 0.0;
+}
+
+int find_dimension(string line)
+{
+   	int d=0;
+   	for(int i = 0; i < line.length(); i++)
+   	{
+   		if (isblank(line[i]))
+   		{
+			d++;               //find dimension
+		}
+	}
+}
+
+string find_metric(string line)
+{
+	istringstream ss(line);
+	string::size_type sz;
+	istream_iterator<std::string> begin(ss), end;    		
+	vector<string> arrayTokens(begin, end);
+	if(arrayTokens[0].compare("@metric")==0)
+	{
+   		return arrayTokens[1]; //return metric
+   	}
+   	return "{euclidean}"; //default is euclidean
+}
+
+
+double	vectors_distance(vector<int> a, vector<int> b)
+{
+   vector<double>	auxiliary;
 
 	std::transform (a.begin(), a.end(), b.begin(), std::back_inserter(auxiliary),//
 		[](int element1, int element2) {return pow((element1-element2),2);});

@@ -50,8 +50,8 @@ DataVector::DataVector(string line,string vector_name,int k, int L,vector <doubl
 
 
 	/* 3. initialize array of h */
-	for (int x=0;x<L; x++){
-		for (int i=0;i<k;i++)
+	for (int x=0;x<k; x++){
+		for (int i=0;i<L;i++)
 		{
 
 			g.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[x][i] )/w));   //ALLAKSE TO GIA L PINAKES 
@@ -94,7 +94,7 @@ string DataVector::name_accessor(){
 
 DataVector::~DataVector()
 {
-	
+	cout << "delete " << name_accessor()<<endl;
 }
 
 void DataVector::print_vector()
