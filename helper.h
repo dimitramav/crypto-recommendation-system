@@ -1,0 +1,12 @@
+void make_table_ht(double ** ,int,int,int);
+void make_table_hv(vector <double> **, int, int, int);
+void print_table_ht(double ** , int ,int);
+void print_table_hv(vector <double> **, int, int, int);
+void print_hashtable(HashTable *);
+double find_radius(string line);
+double	vectors_distance(vector<int> ,vector<int>);
+set <DataVector *> rangesearch(int,int,HashTable *, double,DataVector *);
+map <DataVector *, double> approximateNN( int,int,HashTable * ,DataVector *);
+map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *);
+int find_dimension(string);
+string find_metric(string);

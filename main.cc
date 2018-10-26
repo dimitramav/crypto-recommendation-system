@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include "lsh_euclidean.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -28,10 +29,9 @@ int main(int argc, char * argv[])
 	int n=0;
 	vector <double> ** hv;
 	double radius;
+	string metric;
 	vector <DataVector *> dataset_vectors;
 	set <DataVector *> neighbours_rangesearch;
-	//vector <HashTable *> hashtables_vector;
-	//unordered_map <string,DataVector*> test;
 
 
 /* 1. READ ARGUREMENTS */
@@ -97,11 +97,8 @@ int main(int argc, char * argv[])
 		n++;
 		//first vector
 		if(d==0){
-			for(int i = 0; i < line.length(); i++){
-				if (isblank(line[i])){
-					d++;               //find dimension
-				}
-			}
+			d=find_dimension(line);
+			metric=find_metric(line);
 			/*4. TABLE FOR v */
 			hv = new vector <double> * [number_of_hashfunctions];
 			for(int i = 0;i<number_of_hashtables;i++)
@@ -110,28 +107,10 @@ int main(int argc, char * argv[])
 			//print_table_hv(hv,d,number_of_hashtables,number_of_hashfunctions);
 		}
 		DataVector * datapoint = new DataVector(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-		dataset_vectors.push_back(datapoint);
-		/*for (int i=0;i<number_of_hashtables; i++)
-		{
-			string key = datapoint->g_accessor(i,number_of_hashfunctions);
-			string name = datapoint->name_accessor();
-			//(hashtables_vector.at(i)->hashtable_accessor())[key]=name;
-			//cout << (hashtables_vector.at(i)->hashtable_accessor())[key];
- 			hashtables_vector[i]->insert(make_pair(key,datapoint));
- 			//test.insert(make_pair(key,datapoint)); It works!
-
-		}*/	
-		//test.print_vector();   
-
+		dataset_vectors.push_back(datapoint);    
 		
 	}
-	/* 4. CREATE HASHTABLES 
-	for (int i=0; i< number_of_hashtables ;i ++)
-	{
-		//HashTable * hash= new HashTable();
-		HashTable * hash = new HashTable;
-		hashtables_vector.push_back(hash);
-	}*/
+	/* 4. CREATE HASHTABLES */
 	HashTable hashtables_vector[number_of_hashtables];
 
 	for (int x=0;x<dataset_vectors.size();x++)
