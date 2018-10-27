@@ -5,24 +5,33 @@ using namespace std;
 
 
 class DataVector{
-private:
+protected:
 	string name;
-	vector<int> v;
+	vector<double> v;
 	vector<int> g;
 public:
-	DataVector(string,string,int,int,vector <double> **, double **,int);
+	//virtual void func() const=0;
+	//DataVector(string,string,int,int,vector <double> **, double **,int);
+	DataVector();
 	~DataVector();
 	static int no_of_queryset;
 	static int no_of_dataset;
 	void print_vector();
 	string g_accessor(int,int);
 	string name_accessor();
-	vector <int> point_accessor();
+	vector <double> point_accessor();
+};
+
+
+class Euclidean : public DataVector{
+	public:
+		Euclidean(string,string,int,int,vector <double> **, double **,int);
+		~Euclidean();
+	
 };
 
 typedef unordered_map <string, list <DataVector *> >HashTable;
 	
-
 
 
 

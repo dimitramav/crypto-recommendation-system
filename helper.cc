@@ -126,12 +126,12 @@ string find_metric(string line)
 }
 
 
-double	vectors_distance(vector<int> a, vector<int> b)
+double	vectors_distance(vector<double> a, vector<double> b)
 {
    vector<double>	auxiliary;
 
 	std::transform (a.begin(), a.end(), b.begin(), std::back_inserter(auxiliary),//
-		[](int element1, int element2) {return pow((element1-element2),2);});
+		[](double element1, double element2) {return pow((element1-element2),2);});
 
 	return  sqrt(std::accumulate(auxiliary.begin(), auxiliary.end(), 0.0));
 } 
@@ -148,13 +148,13 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius
 			double euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
 			if(euclidean_distance<radius)
 			{
-				//cout << (it->second)->g_accessor(i,k) << endl;
+				//cout << v->name_accessor() << endl;
 				neighbours.insert(v);
 			}
 		}
 	}
 	return neighbours;
-	//getchar(); 
+	
 }
 
 map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,DataVector *querypoint)

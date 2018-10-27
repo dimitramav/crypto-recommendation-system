@@ -38,7 +38,6 @@ int main(int argc, char * argv[])
 	set <DataVector *> ::iterator neighbours_iterator;
 	map <DataVector *,double> true_neighbour;
 	map <DataVector *,double> approximate_neighbour;
-
 	string command;
 
 /* 1. READ ARGUREMENTS */
@@ -123,7 +122,7 @@ int main(int argc, char * argv[])
 			make_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
 			//print_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
 		}
-		DataVector * datapoint = new DataVector(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		DataVector * datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 		dataset_vectors.push_back(datapoint);    
 		
 	}
@@ -186,18 +185,18 @@ int main(int argc, char * argv[])
    				continue;
 
    			}
-   			DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+   			DataVector * querypoint = new Euclidean(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
    			
-   			/* NN ALGORITHMS 
+   			/* NN ALGORITHMS */
    			neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
    			int start_approximate=clock();
    			approximate_neighbour=approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
    			int stop_approximate=clock();
   			int start_true=clock();
    			true_neighbour=trueNN(dataset_vectors,querypoint);
-   			int stop_true = clock();*/
+   			int stop_true = clock();
 
-   			/* WRITE OUTPUT 
+   			/* WRITE OUTPUT */
    			output << querypoint->name_accessor() <<endl;
    			output << "R-near neighbours:" <<endl;
    			for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
@@ -210,7 +209,7 @@ int main(int argc, char * argv[])
    			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
    			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
-   			output << endl;*/
+   			output << endl;
 
    			/* DELETE STRUCT */
    			delete querypoint;

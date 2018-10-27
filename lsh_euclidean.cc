@@ -27,7 +27,7 @@ int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 
-DataVector::DataVector(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
+Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
 {
 	int number;
 	/* 1.initialize name */
@@ -53,13 +53,14 @@ DataVector::DataVector(string line,string vector_name,int k, int L,vector <doubl
 	for (int x=0;x<k; x++){
 		for (int i=0;i<L;i++)
 		{
-
-			g.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[x][i] )/w));   //ALLAKSE TO GIA L PINAKES 
+			g.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[x][i] )/w));   
+		
 		}
 	}
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
+Euclidean::~Euclidean(){}
 
 string DataVector::g_accessor(int current_hashtable, int k)  //convert g vector for a particular hash table L to string 
 {
@@ -84,14 +85,14 @@ string DataVector::g_accessor(int current_hashtable, int k)  //convert g vector 
 	return g_string;
 }
 
-vector<int> DataVector::point_accessor()
+vector<double> DataVector::point_accessor()
 {
 	return v;
 }
 string DataVector::name_accessor(){
 	return name;
 }
-
+DataVector::DataVector(){}
 DataVector::~DataVector()
 {
 	cout << "delete " << name_accessor()<<endl;
@@ -100,7 +101,7 @@ DataVector::~DataVector()
 void DataVector::print_vector()
 {
 
-	vector<int>::iterator it;
+	vector<double>::iterator it;
 
 
 	cout << name << " contains:";
