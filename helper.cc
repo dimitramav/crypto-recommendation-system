@@ -122,7 +122,7 @@ string find_metric(string line)
 	{
    		return arrayTokens[1]; //return metric
    	}
-   	return "{euclidean}"; //default is euclidean
+   	return "{default_euclidean}"; //default is euclidean
 }
 
 

@@ -10,6 +10,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <ctime>
 #include "lsh_euclidean.h"
 #include "helper.h"
 
@@ -18,7 +19,8 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 	string dataset_path,queryset_path,output_path;	
-	ifstream dataset,queryset;		
+	ifstream dataset,queryset;
+	ofstream output;		
 	int option;
 	int k=-1;
 	int L=-1;
@@ -33,6 +35,9 @@ int main(int argc, char * argv[])
 	vector <DataVector *> dataset_vectors;
 	vector <DataVector *>::iterator dataset_iterator;
 	set <DataVector *> neighbours_rangesearch;
+	set <DataVector *> ::iterator neighbours_iterator;
+	map <DataVector *,double> true_neighbour;
+	map <DataVector *,double> approximate_neighbour;
 
 	string command;
 
@@ -61,6 +66,7 @@ int main(int argc, char * argv[])
 			return -1;
 		}
 	}	
+	cout << "hi";
 	if ( dataset_path.length()==0 || queryset_path.length()==0 || output_path.length()==0) 
 	{
 		cout << "File parameters are mandatory. Try again." << endl;
@@ -83,8 +89,6 @@ int main(int argc, char * argv[])
 	ht = new double * [number_of_hashfunctions];
 	for(int i = 0;i<number_of_hashfunctions;i++)
 		ht[i] = new double[number_of_hashtables];
-	//double ht[number_of_hashtables][number_of_hashfunctions]
-	//array <array<double,number_of_hashfunctions>,number_of_hashtables> ht;
 	make_table_ht(ht,w,number_of_hashfunctions,number_of_hashtables);
 	//print_table_ht(ht,number_of_hashfunctions,number_of_hashtables);
 
@@ -98,11 +102,20 @@ int main(int argc, char * argv[])
    	int d=0;
 	while (getline(dataset, line))  //read dataset line by line
 	{
+		if(n==0)
+		{
+			metric=find_metric(line);
+			if(metric.compare("{default_euclidean}")!=0)
+			{
+				n++;
+				continue; //first line was just metric so we need to read the next line
+			}
+		}
 		n++;
 		//first vector
-		if(d==0){
+		if(d==0)
+		{
 			d=find_dimension(line);
-			metric=find_metric(line);
 			/*4. TABLE FOR v */
 			hv = new vector <double> * [number_of_hashfunctions];
 			for(int i = 0;i<number_of_hashfunctions;i++)
@@ -124,7 +137,6 @@ int main(int argc, char * argv[])
 		{
 			string key = datapoint->g_accessor(i,number_of_hashfunctions);
 			string name = datapoint->name_accessor();
-			//hashtables_vector[i]->insert(make_pair(key,datapoint));
 			hashtables_vector[i][key].push_back(datapoint);
 
 
@@ -148,11 +160,11 @@ int main(int argc, char * argv[])
    			//delete t & v table
    			for(int i = 0;i<number_of_hashfunctions;i++)
    			{
-				delete ht[i];
-				cout << hv[i] <<endl;
+   				delete [] ht[i];
+   				delete [] hv[i];
    			}
-   			delete ht;
-   			//delete hv;
+   			delete [] ht;
+   			delete [] hv;
 
    			return 0;
    		}
@@ -169,21 +181,41 @@ int main(int argc, char * argv[])
    			if (n==0)
    			{
    				radius=find_radius(line);
+   				output.open (output_path);
    				n++;
    				continue;
 
    			}
    			DataVector * querypoint = new DataVector(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-   			cout << querypoint->name_accessor() <<endl;
-   			/*neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
-   			for (  set<DataVector *>::iterator it = neighbours_rangesearch.begin(); it != neighbours_rangesearch.end(); ++it) {
-   				cout << (*it)->name_accessor();
+   			
+   			/* NN ALGORITHMS 
+   			neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+   			int start_approximate=clock();
+   			approximate_neighbour=approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
+   			int stop_approximate=clock();
+  			int start_true=clock();
+   			true_neighbour=trueNN(dataset_vectors,querypoint);
+   			int stop_true = clock();*/
+
+   			/* WRITE OUTPUT 
+   			output << querypoint->name_accessor() <<endl;
+   			output << "R-near neighbours:" <<endl;
+   			for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
+   			{
+   				output << (*neighbours_iterator)->name_accessor() << endl;
    			}
-   			approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
-   			trueNN(dataset_vectors,querypoint);
-   			getchar();*/
+   			output << "LSH nearest neighbour: " << approximate_neighbour.begin()->first->name_accessor() << endl;
+   			output << "distanceLSH: " << approximate_neighbour.begin()->second << endl;
+   			output << "True nearest neighbour: " << true_neighbour.begin()->first->name_accessor() << endl;
+   			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
+   			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
+   			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
+   			output << endl;*/
+
+   			/* DELETE STRUCT */
    			delete querypoint;
    		}
+   		output.close();
    		queryset.close();
    		cout << "Do you want to continue with different query_set?" <<endl;
 
