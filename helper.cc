@@ -24,7 +24,7 @@ using namespace std;
 
 /* helper functions */
 
-void make_table_ht(double ** ht,int w,int rows,int columns)
+void make_table_hnumber(double ** ht,int w,int rows,int columns)
 {
 	default_random_engine generator;
 	uniform_real_distribution<double> distribution(0.0,w);
@@ -34,7 +34,7 @@ void make_table_ht(double ** ht,int w,int rows,int columns)
 	return;
 }
 
-void print_table_ht(double ** ht,int rows,int columns)
+void print_table_hnumber(double ** ht,int rows,int columns)
 {
 	for (int i=0; i<rows; i++)
 	{
@@ -45,7 +45,7 @@ void print_table_ht(double ** ht,int rows,int columns)
 	return;	
 }
 
-void make_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+void make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
 {	
 	default_random_engine generator;
 	normal_distribution<double> distribution(0.0,1.0);
@@ -60,7 +60,9 @@ void make_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
 		return;
 }
 
-void print_table_hv( vector <double> ** hv, int dimension, int rows, int columns)
+
+
+void print_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
 {	
 	for (int i=0; i<rows; i++)
 		for(int x=0; x<columns; x++)
@@ -142,7 +144,8 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius
 	set <DataVector * > neighbours; //to avoid duplicates
 	for (int i=0;i<L;i++)
 	{
-		string key= querypoint->g_accessor(i,k);
+		
+		string key= querypoint->key_accessor(i,k);
 		for (auto v : hashtables[i][key])
 		{
 			double euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
@@ -167,7 +170,7 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 	for (int i=0;i<L;i++)
 	{
 		points_checked=0;
-		string key= querypoint->g_accessor(i,k);
+		string key= querypoint->key_accessor(i,k);
 		for ( auto v: hashtables[i][key])
 		{
 			if (points_checked> 3*L)

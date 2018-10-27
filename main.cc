@@ -30,6 +30,9 @@ int main(int argc, char * argv[])
 	int number_of_hashtables;
 	int n=0;
 	vector <double> ** hv;
+	vector <double> ** hr;
+	double ** ht;
+	DataVector * datapoint;
 	double radius;
 	string metric;
 	vector <DataVector *> dataset_vectors;
@@ -65,7 +68,6 @@ int main(int argc, char * argv[])
 			return -1;
 		}
 	}	
-	cout << "hi";
 	if ( dataset_path.length()==0 || queryset_path.length()==0 || output_path.length()==0) 
 	{
 		cout << "File parameters are mandatory. Try again." << endl;
@@ -83,13 +85,6 @@ int main(int argc, char * argv[])
 		number_of_hashtables = L;
 	const int w = 400;
 
-	/* 2. TABLE FOR t */
-	double ** ht;
-	ht = new double * [number_of_hashfunctions];
-	for(int i = 0;i<number_of_hashfunctions;i++)
-		ht[i] = new double[number_of_hashtables];
-	make_table_ht(ht,w,number_of_hashfunctions,number_of_hashtables);
-	//print_table_ht(ht,number_of_hashfunctions,number_of_hashtables);
 
    	/* 3. READ DATASET */
    	dataset.open(dataset_path.c_str());  //convert string to const char *
@@ -115,14 +110,41 @@ int main(int argc, char * argv[])
 		if(d==0)
 		{
 			d=find_dimension(line);
-			/*4. TABLE FOR v */
-			hv = new vector <double> * [number_of_hashfunctions];
-			for(int i = 0;i<number_of_hashfunctions;i++)
-				hv[i] = new vector <double> [number_of_hashtables];
-			make_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
-			//print_table_hv(hv,d,number_of_hashfunctions,number_of_hashtables);
+			if(metric.compare("{cosine}")==0) //cosine metric
+			{
+				/* 2. TABLE FOR r */
+				hr = new vector <double> * [number_of_hashfunctions];
+				for(int i = 0;i<number_of_hashfunctions;i++)
+					hr[i] = new vector <double> [number_of_hashtables];
+				make_table_hvector(hr,d,number_of_hashfunctions,number_of_hashtables);
+			}
+			else
+			{
+				/* 2. TABLE FOR t */
+				ht = new double * [number_of_hashfunctions];
+				for(int i = 0;i<number_of_hashfunctions;i++)
+					ht[i] = new double[number_of_hashtables];
+				make_table_hnumber(ht,w,number_of_hashfunctions,number_of_hashtables);
+				//print_table_hnumber(ht,number_of_hashfunctions,number_of_hashtables);
+				/*4. TABLE FOR v */
+				hv = new vector <double> * [number_of_hashfunctions];
+				for(int i = 0;i<number_of_hashfunctions;i++)
+					hv[i] = new vector <double> [number_of_hashtables];
+				make_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
+				//print_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
+			}
 		}
-		DataVector * datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		if(metric.compare("{cosine}")==0)
+		{
+			datapoint = new Cosine(line,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
+			datapoint->key_accessor(1,1);
+			getchar();
+		}
+		else
+		{
+			datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+
+		}
 		dataset_vectors.push_back(datapoint);    
 		
 	}
@@ -134,20 +156,13 @@ int main(int argc, char * argv[])
 		DataVector * datapoint=dataset_vectors[x];
 		for (int i=0;i< number_of_hashtables; i++)
 		{
-			string key = datapoint->g_accessor(i,number_of_hashfunctions);
+			string key = datapoint->key_accessor(i,number_of_hashfunctions);
 			string name = datapoint->name_accessor();
 			hashtables_vector[i][key].push_back(datapoint);
 
 
 		}
 	}
-	/* PRINT HASHTABLES 
-	for (int i=0; i<number_of_hashtables; i++)
-	{
-		cout << i << " HASH TABLE"<< endl;
-		print_hashtable(hashtables_vector[i]);
-		getchar();
-	}*/
 	/* 5. READ QUERYSET AGAIN AND AGAIN*/
 	do{
    		if(!queryset_path.compare("no")) //end of program - Time to delete some structs
@@ -192,7 +207,7 @@ int main(int argc, char * argv[])
    			int start_approximate=clock();
    			approximate_neighbour=approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
    			int stop_approximate=clock();
-  			int start_true=clock();
+   			int start_true=clock();
    			true_neighbour=trueNN(dataset_vectors,querypoint);
    			int stop_true = clock();
 

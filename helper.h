@@ -1,7 +1,7 @@
-void make_table_ht(double ** ,int,int,int);
-void make_table_hv(vector <double> **, int, int, int);
-void print_table_ht(double ** , int ,int);
-void print_table_hv(vector <double> **, int, int, int);
+void make_table_hnumber(double ** ,int,int,int);
+void make_table_hvector(vector <double> **, int, int, int);
+void print_table_hnumber(double ** , int ,int);
+void print_table_hvector(vector <double> **, int, int, int);
 void print_hashtable(HashTable *);
 double find_radius(string line);
 double	vectors_distance(vector<int> ,vector<int>);
