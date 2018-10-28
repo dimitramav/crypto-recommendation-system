@@ -33,6 +33,7 @@ int main(int argc, char * argv[])
 	vector <double> ** hr;
 	double ** ht;
 	DataVector * datapoint;
+	DataVector * querypoint;
 	double radius;
 	string metric;
 	vector <DataVector *> dataset_vectors;
@@ -137,9 +138,7 @@ int main(int argc, char * argv[])
 		if(metric.compare("{cosine}")==0)
 		{
 			datapoint = new Cosine(line,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
-			datapoint->key_accessor(1,1);
-			getchar();
-		}
+		}		
 		else
 		{
 			datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
@@ -156,11 +155,20 @@ int main(int argc, char * argv[])
 		DataVector * datapoint=dataset_vectors[x];
 		for (int i=0;i< number_of_hashtables; i++)
 		{
-			string key = datapoint->key_accessor(i,number_of_hashfunctions);
-			string name = datapoint->name_accessor();
-			hashtables_vector[i][key].push_back(datapoint);
+			if(metric.compare("{cosine}")==0)
+			{
+				string key = datapoint->key_accessor(i,number_of_hashfunctions);
+				string name = datapoint->name_accessor();
+				hashtables_vector[i][key].push_back(datapoint);
 
 
+			}
+			else
+			{
+				string key = datapoint->key_accessor(i,number_of_hashfunctions);
+				string name = datapoint->name_accessor();
+				hashtables_vector[i][key].push_back(datapoint);
+			}
 		}
 	}
 	/* 5. READ QUERYSET AGAIN AND AGAIN*/
@@ -171,17 +179,32 @@ int main(int argc, char * argv[])
    			for(dataset_iterator = dataset_vectors.begin(); dataset_iterator != dataset_vectors.end(); dataset_iterator++)    {
    				delete *(dataset_iterator);
    			}
-   			//delete t & v table
-   			for(int i = 0;i<number_of_hashfunctions;i++)
-   			{
-   				delete [] ht[i];
-   				delete [] hv[i];
-   			}
-   			delete [] ht;
-   			delete [] hv;
 
-   			return 0;
-   		}
+
+ 			if(metric.compare("{cosine}")==0) //cosine metric
+ 			{
+ 				//delete r table
+ 				for(int i = 0;i<number_of_hashfunctions;i++)
+ 				{
+ 					delete [] hr[i];
+ 				}
+
+ 			}
+ 			else
+ 			{
+ 				//delete t & v table
+ 				for(int i = 0;i<number_of_hashfunctions;i++)
+ 				{
+ 					delete [] ht[i];
+ 					delete [] hv[i];
+ 				}
+ 				delete [] ht;
+ 				delete [] hv;
+ 			}
+
+
+ 			return 0;
+ 		}
 		queryset.open(queryset_path.c_str());  //convert string to const char *
 		if (!queryset.is_open())
 		{
@@ -200,15 +223,22 @@ int main(int argc, char * argv[])
    				continue;
 
    			}
-   			DataVector * querypoint = new Euclidean(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
-   			
+   			if(metric.compare("{cosine}")==0)
+   			{
+   				querypoint = new Cosine(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hr);
+
+   			}
+   			else
+   			{
+   				querypoint = new Euclidean(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+   			}
    			/* NN ALGORITHMS */
-   			neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint);
+   			neighbours_rangesearch=rangesearch(number_of_hashtables,number_of_hashfunctions,hashtables_vector,radius,querypoint,metric);
    			int start_approximate=clock();
-   			approximate_neighbour=approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint);
+   			approximate_neighbour=approximateNN(number_of_hashtables,number_of_hashfunctions,hashtables_vector,querypoint,metric);
    			int stop_approximate=clock();
    			int start_true=clock();
-   			true_neighbour=trueNN(dataset_vectors,querypoint);
+   			true_neighbour=trueNN(dataset_vectors,querypoint,metric);
    			int stop_true = clock();
 
    			/* WRITE OUTPUT */

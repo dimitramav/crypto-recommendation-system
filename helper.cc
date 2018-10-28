@@ -128,7 +128,20 @@ string find_metric(string line)
 }
 
 
-double	vectors_distance(vector<double> a, vector<double> b)
+double vectors_distance(string metric,vector<double> a, vector<double> b)
+{
+	double distance;
+	if(metric.compare("{cosine}")==0)
+	{
+		distance=cosine_distance(a,b);
+	}
+	else
+	{
+		distance=euclidean_distance(a,b);
+	}
+	return distance;
+}
+double	euclidean_distance(vector<double> a, vector<double> b)
 {
    vector<double>	auxiliary;
 
@@ -138,8 +151,21 @@ double	vectors_distance(vector<double> a, vector<double> b)
 	return  sqrt(std::accumulate(auxiliary.begin(), auxiliary.end(), 0.0));
 } 
 
+double cosine_distance(vector<double> a, vector <double> b)
+{
+	double av = 0.;
+	double bv = 0;
+    for (unsigned int i = 0; i < a.size(); ++i) {
+        av += a[i] * a[i];
+        bv += b[i] * b[i];
+    }
+    double normA = sqrt(av);
+    double normB = sqrt(bv);
+	double cosine_distance=inner_product(a.begin(),a.end(),b.begin(),0)/(normB*normA);
+	return 1-cosine_distance;
+}
 
-set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius,DataVector *querypoint)
+set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius,DataVector *querypoint,string metric)
 {
 	set <DataVector * > neighbours; //to avoid duplicates
 	for (int i=0;i<L;i++)
@@ -148,8 +174,8 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius
 		string key= querypoint->key_accessor(i,k);
 		for (auto v : hashtables[i][key])
 		{
-			double euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
-			if(euclidean_distance<radius)
+			double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
+			if(distance<radius)
 			{
 				//cout << v->name_accessor() << endl;
 				neighbours.insert(v);
@@ -160,10 +186,10 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius
 	
 }
 
-map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,DataVector *querypoint)
+map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,DataVector *querypoint,string metric)
 {
 	DataVector * neighbour;
-	double euclidean_distance;
+	double distance;
 	map <DataVector * , double> nearest_neighbour;
 	int points_checked;
 	double minimum_distance=numeric_limits<double>::max(); //initialize minimum distance for approximateNN
@@ -177,35 +203,34 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 			{
 				break;
 			}	 
-			euclidean_distance=vectors_distance(querypoint->point_accessor(),v->point_accessor());
-			if(euclidean_distance<minimum_distance)
+			distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
+			if(distance<minimum_distance)
 			{
-				minimum_distance=euclidean_distance;
+				minimum_distance=distance;
 				neighbour=v;
 			}
 			//cout << it->second->name_accessor() << " "<< euclidean_distance << "||";
 			points_checked++;
 		}
 	}
-	cout << endl;
 	cout << neighbour->name_accessor() <<" is near " << minimum_distance << endl;
 	nearest_neighbour.insert ( pair<DataVector *,double>(neighbour,minimum_distance) );
 	return nearest_neighbour;
 	
 }
 
-map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * querypoint)
+map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * querypoint,string metric)
 {
 	DataVector * neighbour;
 	map <DataVector * , double> nearest_neighbour;
-	double euclidean_distance;
+	double distance;
 	double minimum_distance=numeric_limits<double>::max(); //initialize minimum distance for approximateNN
 	for (int i=0;i<dataset.size();i++)
 	{
-		euclidean_distance=vectors_distance(querypoint->point_accessor(),dataset[i]->point_accessor());
-		if(euclidean_distance<minimum_distance)
+		distance=vectors_distance(metric,querypoint->point_accessor(),dataset[i]->point_accessor());
+		if(distance<minimum_distance)
 		{
-			minimum_distance=euclidean_distance;
+			minimum_distance=distance;
 			neighbour=dataset[i];
 		}
 	}

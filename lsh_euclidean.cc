@@ -31,10 +31,27 @@ DataVector::~DataVector()
 	cout << "delete " << name_accessor()<<endl;
 }
 
-string DataVector::key_accessor(int a, int b)   
+string DataVector::key_accessor(int current_hashtable, int k)  //convert g vector for a particular hash table L to string 
 {
-	cout << "in general accessor";
-	return "";
+	//cout << "whole g " << endl;
+
+	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	//getchar();
+	vector<int>::const_iterator first = h.begin() + k*current_hashtable;
+	vector<int>:: const_iterator last = h.begin() + k*current_hashtable +k;
+	vector<int> specific_g(first, last);
+	//cout << "specific_g" << endl;
+	//copy(specific_g.begin(),specific_g.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	//getchar();
+	stringstream ss;
+	for(size_t i = 0; i < specific_g.size(); ++i)
+	{
+		if(i != 0)
+			ss << " ";
+		ss << specific_g[i];
+	}
+	string g_string = ss.str();
+	return g_string;
 }
 
 vector<double> DataVector::point_accessor()
@@ -96,29 +113,7 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 }
 Euclidean::~Euclidean(){}
 
-string Euclidean::key_accessor(int current_hashtable, int k)  //convert g vector for a particular hash table L to string 
-{
-	cout << "in euclidean";
-	//cout << "whole g " << endl;
 
-	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
-	//getchar();
-	vector<int>::const_iterator first = h.begin() + k*current_hashtable;
-	vector<int>:: const_iterator last = h.begin() + k*current_hashtable +k;
-	vector<int> specific_g(first, last);
-	//cout << "specific_g" << endl;
-	//copy(specific_g.begin(),specific_g.end(),std::ostream_iterator<double>(std::cout, "  " ));
-	//getchar();
-	stringstream ss;
-	for(size_t i = 0; i < specific_g.size(); ++i)
-	{
-		if(i != 0)
-			ss << " ";
-		ss << specific_g[i];
-	}
-	string g_string = ss.str();
-	return g_string;
-}
 
 /* Cosine */
 
@@ -160,8 +155,3 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 }
 
 Cosine::~Cosine(){}
-
-string Cosine::key_accessor(int current_hashtable,int k){
-	cout << "in cosine accessor";
-	
-}
