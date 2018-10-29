@@ -127,6 +127,14 @@ string find_metric(string line)
    	return "{default_euclidean}"; //default is euclidean
    }
 
+   int bitstring_to_int(string key)
+   {
+   	string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+   	key.erase(end_pos, key.end());
+   	unsigned int int_key=stoi(key, 0, 2);
+   	return int_key;
+   }
+
 
    double vectors_distance(string metric,vector<double> a, vector<double> b)
    {
@@ -209,17 +217,12 @@ set <DataVector *> cube_rangesearch(int M,int probes,int k, int vertices,list <D
 	set <DataVector * > neighbours; //to avoid duplicates
 	int points_checked=0;
 	string key= querypoint->key_accessor(0,k);
-	string::size_type sz;
-	unsigned int long_key;	
-	string::iterator end_pos = remove(key.begin(), key.end(), ' ');
-	key.erase(end_pos, key.end());
-	long_key=stoi(key, 0, 2);
-	cout << long_key << endl;
+	int int_key= bitstring_to_int( key);
 	for(int i=0; i<vertices; ++i) 
 	{
 		//cout << "i " <<i << "vs long_key" << long_key << endl;
 		//cout << "hamming " << hamming_distance(i,long_key) << " vs " << probes << endl;
-		if(hamming_distance(i,long_key)<=probes){
+		if(hamming_distance(i,int_key)<=probes){
 			probes--;
 			points_checked=0;
 			for (auto v : hypercube[i])
@@ -260,14 +263,6 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 	{
 		points_checked=0;
 		string key= querypoint->key_accessor(i,k);
-		/*(string::size_type sz;
-		unsigned long long_key;
-		if(metric.compare("{cosine}")==0)
-		{
-			string::iterator end_pos = remove(key.begin(), key.end(), ' ');
-			key.erase(end_pos, key.end());
-			long_key=stoull(key, 0, 2);
-		}*/
 		for ( auto v: hashtables[i][key])
 		{
 
@@ -288,6 +283,51 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 	nearest_neighbour.insert ( pair<DataVector *,double>(neighbour,minimum_distance) );
 	return nearest_neighbour;
 	
+}
+
+map <DataVector *,double> cube_approximateNN(int M,int probes,int k, int vertices,list <DataVector *> * hypercube,DataVector * querypoint,string metric)
+{
+	DataVector * neighbour;
+	double minimum_distance=numeric_limits<double>::max(); 
+	map <DataVector * , double> nearest_neighbour;
+	int points_checked=0;
+	string key= querypoint->key_accessor(0,k);
+	int int_key= bitstring_to_int(key);
+	for(int i=0; i<vertices; ++i) 
+	{
+		//cout << "i " <<i << "vs long_key" << long_key << endl;
+		//cout << "hamming " << hamming_distance(i,long_key) << " vs " << probes << endl;
+		if(hamming_distance(i,int_key)<=probes){
+			probes--;
+			points_checked=0;
+			for (auto v : hypercube[i])
+			{
+
+				if(points_checked<M)
+				{
+					points_checked++;
+					double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
+					if(distance<minimum_distance)
+					{
+						minimum_distance=distance;
+						neighbour=v;
+					}
+					
+				}
+				else
+				{
+					break; // move on to the next cell (enough points from this cell)
+				}
+			}
+		}
+		else
+		{
+			continue; //go to next cell
+		}
+	}
+	cout << neighbour->name_accessor() <<" is near " << minimum_distance << endl;
+	nearest_neighbour.insert ( pair<DataVector *,double>(neighbour,minimum_distance) );
+	return nearest_neighbour;
 }
 
 map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * querypoint,string metric)

@@ -31,6 +31,7 @@ int main(int argc, char * argv[])
 	int probes;
 	int hypercube_dimension;
 	int points_to_check;
+	int int_key;
 	string line;
 	string vector_value;
 	int number_of_hashfunctions;
@@ -188,11 +189,9 @@ int main(int argc, char * argv[])
 		if(metric.compare("{cosine}")==0)
 		{
 			string key = datapoint->key_accessor(0,number_of_hashfunctions);
-			string::iterator end_pos = remove(key.begin(), key.end(), ' ');
-			key.erase(end_pos, key.end());
-			unsigned int long_key=stoi(key, 0, 2);
+			int_key= bitstring_to_int( key);
 			string name = datapoint->name_accessor();
-			hypercube[long_key].push_back(datapoint);
+			hypercube[int_key].push_back(datapoint);
 			
 
 
@@ -267,13 +266,36 @@ int main(int argc, char * argv[])
    			}
    			/* NN ALGORITHMS */
    			neighbours_rangesearch=cube_rangesearch(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,radius,querypoint,metric);
-   			cout << querypoint->name_accessor() <<endl;
-   			cout << "R-near neighbours:" <<endl;
+   			int start_approximate=clock();
+   			approximate_neighbour=cube_approximateNN(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,querypoint,metric);
+   			int stop_approximate=clock();
+   			int start_true=clock();
+   			true_neighbour=trueNN(dataset_vectors,querypoint,metric);
+   			int stop_true = clock();
+   			mean_time+=(stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000;
+
+   			if(approximate_neighbour.begin()->second/true_neighbour.begin()->second > fraction)
+   			{
+   				fraction=approximate_neighbour.begin()->second/true_neighbour.begin()->second;
+   				max_fraction=  to_string(approximate_neighbour.begin()->second) + string("/") + to_string(true_neighbour.begin()->second);    			
+   			}
+
+   			output << querypoint->name_accessor() <<endl;
+   			output << "R-near neighbours:" <<endl;
    			for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
    			{
-   				cout << (*neighbours_iterator)->name_accessor() << endl;
+   				output << (*neighbours_iterator)->name_accessor() << endl;
    			}
-   		}	
+   			output << "LSH nearest neighbour: " << approximate_neighbour.begin()->first->name_accessor() << endl;
+   			output << "distanceLSH: " << approximate_neighbour.begin()->second << endl;
+   			output << "True nearest neighbour: " << true_neighbour.begin()->first->name_accessor() << endl;
+   			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
+   			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
+   			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
+   		
+   		}
+   		output << "Max fraction: " << max_fraction << " = " << fraction<<endl;
+   		output << "Mean time tLSH " << mean_time/query_number << endl;	
    		output.close();
    		queryset.close();
    		cout << "Do you want to continue with different query_set?" <<endl;
