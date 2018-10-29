@@ -36,7 +36,7 @@ class Cosine : public DataVector{
 		~Cosine();
 
 };
-typedef unordered_map <unsigned long, list <DataVector *> >HashTable;
+typedef unordered_map <string, list <DataVector *> >HashTable;
 	
 
 

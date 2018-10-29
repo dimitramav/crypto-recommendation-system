@@ -25,6 +25,7 @@ int main(int argc, char * argv[])
 	int option;
 	int k=-1;
 	int L=-1;
+	int first_line=0;
 	string line;
 	string vector_value;
 	int number_of_hashfunctions;
@@ -120,33 +121,36 @@ int main(int argc, char * argv[])
 			if(metric.compare("{cosine}")==0) //cosine metric
 			{
 				/* 2. TABLE FOR r */
-				hr = new vector <double> * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					hr[i] = new vector <double> [number_of_hashtables];
-				make_table_hvector(hr,d,number_of_hashfunctions,number_of_hashtables);
+				hr = new vector <double> * [number_of_hashtables];
+				for(int i = 0;i<number_of_hashtables;i++)
+					hr[i] = new vector <double> [number_of_hashfunctions];
+				make_table_hvector(hr,d,number_of_hashtables,number_of_hashfunctions);
+				//print_table_hvector(hr,d,number_of_hashtables,number_of_hashfunctions);
 			}
 			else
 			{
 				/* 2. TABLE FOR t */
-				ht = new double * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					ht[i] = new double[number_of_hashtables];
-				make_table_hnumber(ht,w,number_of_hashfunctions,number_of_hashtables);
-				//print_table_hnumber(ht,number_of_hashfunctions,number_of_hashtables);
+				ht = new double * [number_of_hashtables];
+				for(int i = 0;i<number_of_hashtables;i++)
+					ht[i] = new double[number_of_hashfunctions];
+				make_table_hnumber(ht,w,number_of_hashtables,number_of_hashfunctions);
+				//print_table_hnumber(ht,number_of_hashtables,number_of_hashfunctions);
 				/*4. TABLE FOR v */
-				hv = new vector <double> * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					hv[i] = new vector <double> [number_of_hashtables];
-				make_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
-				//print_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
+				hv = new vector <double> * [number_of_hashtables];
+				for(int i = 0;i<number_of_hashtables;i++)
+					hv[i] = new vector <double> [number_of_hashfunctions];
+				make_table_hvector(hv,d,number_of_hashtables,number_of_hashfunctions);
+				//print_table_hvector(hv,d,number_of_hashtables,number_of_hashfunctions);
 			}
 		}
 		if(metric.compare("{cosine}")==0)
 		{
+			n++;
 			datapoint = new Cosine(line,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
 		}		
 		else
 		{
+			n++;
 			datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 
 		}
@@ -165,11 +169,11 @@ int main(int argc, char * argv[])
 			if(metric.compare("{cosine}")==0)
 			{
 				string key = datapoint->key_accessor(i,number_of_hashfunctions);
-				string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+				/*string::iterator end_pos = remove(key.begin(), key.end(), ' ');
 				key.erase(end_pos, key.end());
-				unsigned long long_key=stoull(key, 0, 2);
+				unsigned long long_key=stoull(key, 0, 2);*/
 				string name = datapoint->name_accessor();
-				hashtables_vector[i][long_key].push_back(datapoint);
+				hashtables_vector[i][key].push_back(datapoint);
 
 
 			}
@@ -177,7 +181,7 @@ int main(int argc, char * argv[])
 			{
 				string key = datapoint->key_accessor(i,number_of_hashfunctions);
 				string name = datapoint->name_accessor();
-				//hashtables_vector[i][key].push_back(datapoint);
+				hashtables_vector[i][key].push_back(datapoint);
 			}
 		}
 	}
@@ -199,7 +203,7 @@ int main(int argc, char * argv[])
  			if(metric.compare("{cosine}")==0) //cosine metric
  			{
  				//delete r table
- 				for(int i = 0;i<number_of_hashfunctions;i++)
+ 				for(int i = 0;i<number_of_hashtables;i++)
  				{
  					delete [] hr[i];
  				}
@@ -208,7 +212,7 @@ int main(int argc, char * argv[])
  			else
  			{
  				//delete t & v table
- 				for(int i = 0;i<number_of_hashfunctions;i++)
+ 				for(int i = 0;i<number_of_hashtables;i++)
  				{
  					delete [] ht[i];
  					delete [] hv[i];
@@ -227,14 +231,15 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 		n=0;
+		first_line=0;
    		while (getline(queryset, line))  //read dataset line by line
    		{
    			//see if radius is defined 
-   			if (n==0)
+   			if (first_line==0)
    			{
    				radius=find_radius(line);
    				output.open (output_path);
-   				n++;
+   				first_line++;
    				continue;
 
    			}
@@ -277,7 +282,6 @@ int main(int argc, char * argv[])
    			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
    			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
-   			getchar();
    			/* DELETE STRUCT */
    			delete querypoint;
    		}

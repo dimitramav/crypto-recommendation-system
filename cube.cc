@@ -27,12 +27,14 @@ int main(int argc, char * argv[])
 	int k=-1;
 	int M=-1;
 	int p=-1;
+	int first_line=0;
 	int probes;
+	int hypercube_dimension;
 	int points_to_check;
 	string line;
 	string vector_value;
 	int number_of_hashfunctions;
-	int n=0;
+	double	 n=0;
 	vector <double> ** hv;
 	vector <double> ** hr;
 	double ** ht;
@@ -122,16 +124,15 @@ int main(int argc, char * argv[])
    	int d=0;
 	while (getline(dataset, line))  //read dataset line by line
 	{
-		if(n==0)
+		if(first_line==0)
 		{
 			metric=find_metric(line);
 			if(metric.compare("{default_euclidean}")!=0)
 			{
-				n++;
+				first_line++;
 				continue; //first line was just metric so we need to read the next line
 			}
 		}
-		n++;
 		//first vector
 		if(d==0)
 		{
@@ -139,40 +140,146 @@ int main(int argc, char * argv[])
 			if(metric.compare("{cosine}")==0) //cosine metric
 			{
 				/* 2. TABLE FOR r */
-				hr = new vector <double> * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					hr[i] = new vector <double> [number_of_hashtables];
-				make_table_hvector(hr,d,number_of_hashfunctions,number_of_hashtables);
+				hr = new vector <double> * [1];
+				for(int i = 0;i<1;i++)
+					hr[i] = new vector <double> [number_of_hashfunctions];
+				make_table_hvector(hr,d,1,number_of_hashfunctions);
+				//print_table_hvector(hr,d,1,number_of_hashfunctions);
 			}
 			else
 			{
 				/* 2. TABLE FOR t */
-				ht = new double * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					ht[i] = new double[number_of_hashtables];
-				make_table_hnumber(ht,w,number_of_hashfunctions,number_of_hashtables);
-				//print_table_hnumber(ht,number_of_hashfunctions,number_of_hashtables);
+				ht = new double * [1];
+				for(int i = 0;i<1;i++)
+					ht[i] = new double[number_of_hashfunctions];
+				make_table_hnumber(ht,w,1,number_of_hashfunctions);
+				print_table_hnumber(ht,1,number_of_hashfunctions);
 				/*4. TABLE FOR v */
-				hv = new vector <double> * [number_of_hashfunctions];
-				for(int i = 0;i<number_of_hashfunctions;i++)
-					hv[i] = new vector <double> [number_of_hashtables];
-				make_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
-				//print_table_hvector(hv,d,number_of_hashfunctions,number_of_hashtables);
+				hv = new vector <double> * [1];
+				for(int i = 0;i<1;i++)
+					hv[i] = new vector <double> [number_of_hashfunctions];
+				make_table_hvector(hv,d,1,number_of_hashfunctions);
+				//print_table_hvector(hv,d,number_of_hashtables,number_of_hashfunctions);
 			}
 		}
 		if(metric.compare("{cosine}")==0)
 		{
-			datapoint = new Cosine(line,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
+			n++;
+			datapoint = new Cosine(line,"item_id",number_of_hashfunctions,1,hr);
 		}		
 		else
 		{
-			datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+			n++;
+			datapoint = new Euclidean(line,"item_id",number_of_hashfunctions,1,hv,ht,w);
 
 		}
 		dataset_vectors.push_back(datapoint);    
 		
 	}
-	cout << n;
+
+	/* 2. CREATE HYPERCUBE */
+	hypercube_dimension= int(pow(2.0,number_of_hashfunctions));
+	list <DataVector * >  hypercube[hypercube_dimension];
+
+	/* 3. FILL HYPERCUBE */
+	for (int x=0;x<dataset_vectors.size();x++)
+	{
+		DataVector * datapoint=dataset_vectors[x];
+		if(metric.compare("{cosine}")==0)
+		{
+			string key = datapoint->key_accessor(0,number_of_hashfunctions);
+			string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+			key.erase(end_pos, key.end());
+			unsigned int long_key=stoi(key, 0, 2);
+			string name = datapoint->name_accessor();
+			hypercube[long_key].push_back(datapoint);
+			
+
+
+		}
+
+
+
+	}
+	/* 5. READ QUERYSET AGAIN AND AGAIN*/
+	do{
+   		if(!queryset_path.compare("no")) //end of program - Time to delete some structs
+   		{
+   			//delete dataset
+   			for(dataset_iterator = dataset_vectors.begin(); dataset_iterator != dataset_vectors.end(); dataset_iterator++)    {
+   				delete *(dataset_iterator);
+   			}
+
+
+ 			if(metric.compare("{cosine}")==0) //cosine metric
+ 			{
+ 				//delete r table
+ 				for(int i = 0;i<1;i++)
+ 				{
+ 					delete [] hr[i];
+ 				}
+
+ 			}
+ 			else
+ 			{
+ 				//delete t & v table
+ 				for(int i = 0;i<1;i++)
+ 				{
+ 					delete [] ht[i];
+ 					delete [] hv[i];
+ 				}
+ 				delete [] ht;
+ 				delete [] hv;
+ 			}
+
+
+ 			return 0;
+ 		}
+		queryset.open(queryset_path.c_str());  //convert string to const char *
+		if (!queryset.is_open())
+		{
+			cout << "Failed to open file." << endl;
+			return 1;
+		}
+		n=0;
+		first_line=0;
+   		while (getline(queryset, line))  //read dataset line by line
+   		{
+
+   			//see if radius is defined 
+   			if (first_line==0)
+   			{
+   				radius=find_radius(line);
+   				output.open (output_path);
+   				first_line++;
+   				continue;
+
+   			}
+   			query_number++;
+   			if(metric.compare("{cosine}")==0)
+   			{
+   				querypoint = new Cosine(line,"item_idS",number_of_hashfunctions,1,hr);
+
+   			}
+   			else
+   			{
+   				querypoint = new Euclidean(line,"item_idS",number_of_hashfunctions,1,hv,ht,w);
+   			}
+   			/* NN ALGORITHMS */
+   			neighbours_rangesearch=cube_rangesearch(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,radius,querypoint,metric);
+   			cout << querypoint->name_accessor() <<endl;
+   			cout << "R-near neighbours:" <<endl;
+   			for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
+   			{
+   				cout << (*neighbours_iterator)->name_accessor() << endl;
+   			}
+   		}	
+   		output.close();
+   		queryset.close();
+   		cout << "Do you want to continue with different query_set?" <<endl;
+
+   	}while (getline(cin,queryset_path)); 
+
 	dataset.close();
    	return 0;
    }

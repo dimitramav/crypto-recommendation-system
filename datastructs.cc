@@ -101,8 +101,8 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 
 
 	/* 3. initialize array of h */
-	for (int x=0;x<k; x++){
-		for (int i=0;i<L;i++)
+	for (int x=0;x<L; x++){
+		for (int i=0;i<k;i++)
 		{
 			h.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[x][i] )/w));   
 		
@@ -140,8 +140,8 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 
 
 	/* 3. initialize array of h */
-	for (int x=0;x<k; x++){
-		for (int i=0;i<L;i++)
+	for (int x=0;x<L; x++){
+		for (int i=0;i<k;i++)
 		{
 			if((inner_product(v.begin(),v.end(),hr[x][i].begin(),0)) >= 0)
 				h.push_back(1);  
