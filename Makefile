@@ -1,21 +1,26 @@
+OBJ4 	= cube.o
 OBJ3	= helper.o
-OBJ2	= lsh_euclidean.o
-OBJ1	= main.o
-OUT1	= main
-OUT2	= lsh_euclidean
+OBJ2	= datastructs.o
+OBJ1	= lsh.o
+OUT1	= lsh
+OUT2	= cube
 CC		= g++
 FLAGS	= -c -std=c++11 -Wall
 
-all: $(OUT1)
-lsh_euclidean.o: lsh_euclidean.cc
-	$(CC) $(FLAGS) lsh_euclidean.cc
+all: $(OUT1) $(OUT2)
+datastructs.o: datastructs.cc
+	$(CC) $(FLAGS) datastructs.cc
 helper.o: helper.cc
 	$(CC) $(FLAGS) helper.cc
-main.o: main.cc
-	$(CC) $(FLAGS) main.cc
-main: $(OBJ1) $(OBJ2) $(OBJ3)
+lsh.o: lsh.cc
+	$(CC) $(FLAGS) lsh.cc
+cube.o: cube.cc
+	$(CC) $(FLAGS) cube.cc
+lsh: $(OBJ1) $(OBJ2) $(OBJ3)
 	$(CC) -o $(OUT1) $(OBJ1) $(OBJ2) $(OBJ3)
+cube: $(OBJ2) $(OBJ3) $(OBJ4)
+	$(CC) -o $(OUT2) $(OBJ2) $(OBJ3) $(OBJ4)
 
 # clean up
 clean:
-	rm -rf $(OBJ1) $(OBJ2) $(OUT1)
+	rm -rf $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OUT1) $(OUT2)

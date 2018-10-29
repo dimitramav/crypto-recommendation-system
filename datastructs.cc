@@ -16,7 +16,7 @@
 #include <map>
 #include <set>
 #include <list>
-#include "lsh_euclidean.h"
+#include "datastructs.h"
 #include "helper.h"
 
 /* DataVector */
@@ -28,7 +28,7 @@ int DataVector::no_of_dataset = 0;
 DataVector::DataVector(){}
 DataVector::~DataVector()
 {
-	cout << "delete " << name_accessor()<<endl;
+	//cout << "delete " << name_accessor()<<endl;
 }
 
 string DataVector::key_accessor(int current_hashtable, int k)  //convert g vector for a particular hash table L to string 

@@ -16,7 +16,7 @@
 #include <map>
 #include <set>
 #include <list>
-#include "lsh_euclidean.h"
+#include "datastructs.h"
 #include "helper.h"
 
 
@@ -153,16 +153,18 @@ double	euclidean_distance(vector<double> a, vector<double> b)
 
 double cosine_distance(vector<double> a, vector <double> b)
 {
-	double av = 0.;
-	double bv = 0;
+	double av = 0.0;
+	double bv = 0.0;
+	double dot = 0.0;
     for (unsigned int i = 0; i < a.size(); ++i) {
+    	dot+=a[i]*b[i];
         av += a[i] * a[i];
         bv += b[i] * b[i];
     }
     double normA = sqrt(av);
     double normB = sqrt(bv);
-	double cosine_distance=inner_product(a.begin(),a.end(),b.begin(),0)/(normB*normA);
-	return 1-cosine_distance;
+	double cosine_distance=dot/(normB*normA);
+	return 1.0 - cosine_distance;
 }
 
 set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius,DataVector *querypoint,string metric)
@@ -172,12 +174,20 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,double radius
 	{
 		
 		string key= querypoint->key_accessor(i,k);
-		for (auto v : hashtables[i][key])
+		string::size_type sz;
+		unsigned long long_key;
+		if(metric.compare("{cosine}")==0)
+		{
+			string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+			key.erase(end_pos, key.end());
+			long_key=stoull(key, 0, 2);
+		}
+		for (auto v : hashtables[i][long_key])
 		{
 			double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
 			if(distance<radius)
 			{
-				//cout << v->name_accessor() << endl;
+				cout << v->name_accessor() << endl;
 				neighbours.insert(v);
 			}
 		}
@@ -197,8 +207,17 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 	{
 		points_checked=0;
 		string key= querypoint->key_accessor(i,k);
-		for ( auto v: hashtables[i][key])
+		string::size_type sz;
+		unsigned long long_key;
+		if(metric.compare("{cosine}")==0)
 		{
+			string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+			key.erase(end_pos, key.end());
+			long_key=stoull(key, 0, 2);
+		}
+		for ( auto v: hashtables[i][long_key])
+		{
+
 			if (points_checked> 3*L)
 			{
 				break;
@@ -209,7 +228,6 @@ map <DataVector *,double> approximateNN(int L, int k,HashTable * hashtables,Data
 				minimum_distance=distance;
 				neighbour=v;
 			}
-			//cout << it->second->name_accessor() << " "<< euclidean_distance << "||";
 			points_checked++;
 		}
 	}

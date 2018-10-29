@@ -11,7 +11,8 @@
 #include <list>
 #include <map>
 #include <ctime>
-#include "lsh_euclidean.h"
+#include <algorithm>
+#include "datastructs.h"
 #include "helper.h"
 
 using namespace std;
@@ -43,6 +44,11 @@ int main(int argc, char * argv[])
 	map <DataVector *,double> true_neighbour;
 	map <DataVector *,double> approximate_neighbour;
 	string command;
+	double fraction=0;
+	double mean_time=0;
+	string max_fraction;
+	string::size_type sz;
+	int query_number=0;
 
 /* 1. READ ARGUREMENTS */
 	while ((option = getopt (argc, argv, "d:q:k:L:o:")) != -1)
@@ -155,11 +161,15 @@ int main(int argc, char * argv[])
 		DataVector * datapoint=dataset_vectors[x];
 		for (int i=0;i< number_of_hashtables; i++)
 		{
+			
 			if(metric.compare("{cosine}")==0)
 			{
 				string key = datapoint->key_accessor(i,number_of_hashfunctions);
+				string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+				key.erase(end_pos, key.end());
+				unsigned long long_key=stoull(key, 0, 2);
 				string name = datapoint->name_accessor();
-				hashtables_vector[i][key].push_back(datapoint);
+				hashtables_vector[i][long_key].push_back(datapoint);
 
 
 			}
@@ -167,9 +177,14 @@ int main(int argc, char * argv[])
 			{
 				string key = datapoint->key_accessor(i,number_of_hashfunctions);
 				string name = datapoint->name_accessor();
-				hashtables_vector[i][key].push_back(datapoint);
+				//hashtables_vector[i][key].push_back(datapoint);
 			}
 		}
+	}
+	for (int x=0;x<number_of_hashtables;x++)
+	{
+			
+		cout << "hash table  " << x <<" has " << hashtables_vector[x].bucket_count() <<" buckets" << endl;
 	}
 	/* 5. READ QUERYSET AGAIN AND AGAIN*/
 	do{
@@ -223,6 +238,7 @@ int main(int argc, char * argv[])
    				continue;
 
    			}
+   			query_number++;
    			if(metric.compare("{cosine}")==0)
    			{
    				querypoint = new Cosine(line,"item_idS",number_of_hashfunctions,number_of_hashtables,hr);
@@ -240,6 +256,13 @@ int main(int argc, char * argv[])
    			int start_true=clock();
    			true_neighbour=trueNN(dataset_vectors,querypoint,metric);
    			int stop_true = clock();
+   			mean_time+=(stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000;
+
+   			if(approximate_neighbour.begin()->second/true_neighbour.begin()->second > fraction)
+   			{
+   				fraction=approximate_neighbour.begin()->second/true_neighbour.begin()->second;
+   				max_fraction=  to_string(approximate_neighbour.begin()->second) + string("/") + to_string(true_neighbour.begin()->second);    			
+   			}
 
    			/* WRITE OUTPUT */
    			output << querypoint->name_accessor() <<endl;
@@ -254,11 +277,12 @@ int main(int argc, char * argv[])
    			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
    			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
-   			output << endl;
-
+   			getchar();
    			/* DELETE STRUCT */
    			delete querypoint;
    		}
+   		output << "Max fraction: " << max_fraction << " = " << fraction<<endl;
+   		output << "Mean time tLSH " << mean_time/query_number << endl;
    		output.close();
    		queryset.close();
    		cout << "Do you want to continue with different query_set?" <<endl;
