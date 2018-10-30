@@ -15,4 +15,5 @@ map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 int find_dimension(string);
 string find_metric(string);
 int hamming_distance(int,int);
-int bitstring_to_int(string);
+int bitstring_to_int(string,string);
+string string_to_bitstring(string);	

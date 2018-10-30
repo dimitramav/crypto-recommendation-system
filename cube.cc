@@ -56,14 +56,14 @@ int main(int argc, char * argv[])
 	string::size_type sz;
 	int query_number=0;
 	static struct option long_options[] = {
-        {"d",required_argument,NULL  ,  'd' },
-        {"q",required_argument,NULL,  'q' },
-        {"k",required_argument, NULL,  'k' },
-        {"M",required_argument, NULL,  'M' },
-        {"probes",required_argument, NULL,  'p' },
-        {"o",required_argument,NULL  ,  'o' },
-        {NULL,0,NULL, 0}
-    };
+		{"d",required_argument,NULL  ,  'd' },
+		{"q",required_argument,NULL,  'q' },
+		{"k",required_argument, NULL,  'k' },
+		{"M",required_argument, NULL,  'M' },
+		{"probes",required_argument, NULL,  'p' },
+		{"o",required_argument,NULL  ,  'o' },
+		{NULL,0,NULL, 0}
+	};
 
 /* 1. READ ARGUREMENTS */
 	while ((option = getopt_long_only (argc, argv, "d:q:k:L:M:p:o:",long_options,NULL)) != -1)
@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
 			return -1;
 		}
 	}
-		
+
 	if ( dataset_path.length()==0 || queryset_path.length()==0 || output_path.length()==0) 
 	{
 		cout << "File parameters are mandatory. Try again." << endl;
@@ -189,13 +189,17 @@ int main(int argc, char * argv[])
 		if(metric.compare("{cosine}")==0)
 		{
 			string key = datapoint->key_accessor(0,number_of_hashfunctions);
-			int_key= bitstring_to_int( key);
+			int_key= bitstring_to_int( key,metric);
 			string name = datapoint->name_accessor();
 			hypercube[int_key].push_back(datapoint);
-			
-
-
 		}
+		else
+		{
+			string key = datapoint->key_accessor(0,number_of_hashfunctions);
+			string bitstring = string_to_bitstring(key);
+			int_key=bitstring_to_int(bitstring,metric);
+			hypercube[int_key].push_back(datapoint);
+ 		}
 
 
 
@@ -292,7 +296,7 @@ int main(int argc, char * argv[])
    			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
    			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
-   		
+
    		}
    		output << "Max fraction: " << max_fraction << " = " << fraction<<endl;
    		output << "Mean time tLSH " << mean_time/query_number << endl;	
@@ -302,6 +306,6 @@ int main(int argc, char * argv[])
 
    	}while (getline(cin,queryset_path)); 
 
-	dataset.close();
+   	dataset.close();
    	return 0;
    }
