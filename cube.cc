@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <getopt.h>
 #include "datastructs.h"
-#include "helper.h"
+#include "cube_funcs.h"
 
 using namespace std;
 
@@ -55,6 +55,8 @@ int main(int argc, char * argv[])
 	string max_fraction;
 	string::size_type sz;
 	int query_number=0;
+	int start_approximate;
+	int stop_approximate;
 	static struct option long_options[] = {
 		{"d",required_argument,NULL  ,  'd' },
 		{"q",required_argument,NULL,  'q' },
@@ -183,7 +185,7 @@ int main(int argc, char * argv[])
 	list <DataVector * >  hypercube[hypercube_dimension];
 
 	/* 3. FILL HYPERCUBE */
-	for (int x=0;x<dataset_vectors.size();x++)
+	for (unsigned int x=0;x<dataset_vectors.size();x++)
 	{
 		DataVector * datapoint=dataset_vectors[x];
 		if(metric.compare("{cosine}")==0)
@@ -204,6 +206,7 @@ int main(int argc, char * argv[])
 
 
 	}
+	
 	/* 5. READ QUERYSET AGAIN AND AGAIN*/
 	do{
    		if(!queryset_path.compare("no")) //end of program - Time to delete some structs
@@ -269,33 +272,54 @@ int main(int argc, char * argv[])
    				querypoint = new Euclidean(line,"item_idS",number_of_hashfunctions,1,hv,ht,w);
    			}
    			/* NN ALGORITHMS */
+
+   			//a. cube rangesearch
    			neighbours_rangesearch=cube_rangesearch(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,radius,querypoint,metric);
-   			int start_approximate=clock();
-   			approximate_neighbour=cube_approximateNN(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,querypoint,metric);
-   			int stop_approximate=clock();
+   			if(!neighbours_rangesearch.empty()) // no near neighbours
+   			{
+   				//b. approximate
+   				start_approximate=clock();
+   				approximate_neighbour=cube_approximateNN(points_to_check,probes,number_of_hashfunctions,hypercube_dimension,hypercube,querypoint,metric);
+   				stop_approximate=clock();
+   			}
+
+   			//c. trueNN
    			int start_true=clock();
    			true_neighbour=trueNN(dataset_vectors,querypoint,metric);
    			int stop_true = clock();
-   			mean_time+=(stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000;
 
-   			if(approximate_neighbour.begin()->second/true_neighbour.begin()->second > fraction)
+   			//d. times
+   			if(!neighbours_rangesearch.empty()) // no near neighbours
    			{
-   				fraction=approximate_neighbour.begin()->second/true_neighbour.begin()->second;
-   				max_fraction=  to_string(approximate_neighbour.begin()->second) + string("/") + to_string(true_neighbour.begin()->second);    			
+   				mean_time+=(stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000;
+
+   				if(approximate_neighbour.begin()->second/true_neighbour.begin()->second > fraction)
+   				{
+   					fraction=approximate_neighbour.begin()->second/true_neighbour.begin()->second;
+   					max_fraction=  to_string(approximate_neighbour.begin()->second) + string("/") + to_string(true_neighbour.begin()->second);    			
+   				}
    			}
 
    			output << querypoint->name_accessor() <<endl;
    			output << "R-near neighbours:" <<endl;
-   			for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
+   			if(!neighbours_rangesearch.empty())
    			{
-   				output << (*neighbours_iterator)->name_accessor() << endl;
+   				for(neighbours_iterator = neighbours_rangesearch.begin(); neighbours_iterator != neighbours_rangesearch.end(); neighbours_iterator++)
+   				{
+   					output << (*neighbours_iterator)->name_accessor() << endl;
+   				}
+   				output << "LSH nearest neighbour: " << approximate_neighbour.begin()->first->name_accessor() << endl;
+   				output << "distanceLSH: " << approximate_neighbour.begin()->second << endl;
+   				output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			}
-   			output << "LSH nearest neighbour: " << approximate_neighbour.begin()->first->name_accessor() << endl;
-   			output << "distanceLSH: " << approximate_neighbour.begin()->second << endl;
+   			else
+   				output << "element has no near neighbours" << endl;
+
    			output << "True nearest neighbour: " << true_neighbour.begin()->first->name_accessor() << endl;
    			output << "distanceTrue: " << true_neighbour.begin()->second <<endl;
-   			output << "tLSH: " << (stop_approximate-start_approximate)/double(CLOCKS_PER_SEC)*1000 << endl;
    			output << "tTrue: " << (stop_true-start_true)/double(CLOCKS_PER_SEC)*1000 << endl;
+   			/* DELETE STRUCT */
+   			delete querypoint;
 
    		}
    		output << "Max fraction: " << max_fraction << " = " << fraction<<endl;
