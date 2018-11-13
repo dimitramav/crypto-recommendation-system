@@ -107,11 +107,8 @@ int main(int argc, char * argv[])
 				make_table_hnumber(ht,parameters["w"],1,parameters["number_of_hashfunctions"]);
 				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
 				/*4. TABLE FOR v */
-				hv = new vector <double> * [1];
-				for(int i = 0;i<1;i++)
-					hv[i] = new vector <double> [parameters["number_of_hashfunctions"]];
-				make_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
-				//print_table_hvector(hv,d,number_of_hashtables,number_of_hashfunctions);
+				hv = make_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
+				print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
 			}
 		}
 		if(metric.compare("cosine")==0)

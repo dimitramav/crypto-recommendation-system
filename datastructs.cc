@@ -156,14 +156,17 @@ Cosine::~Cosine(){}
 /*GENERAL FUNCTIONS*/
 
 
-void make_table_hnumber(double ** ht,int w,int rows,int columns)
+double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 {
+	ht = new double * [1];
+	for(int i = 0;i<1;i++)
+		ht[i] = new double[columns];
 	default_random_engine generator;
 	uniform_real_distribution<double> distribution(0.0,w);
 	for (int i=0; i<rows; i++)
 		for(int x=0; x<columns; x++)
 			ht[i][x]=distribution(generator);
-	return;
+	return ht;
 }
 
 void print_table_hnumber(double ** ht,int rows,int columns)

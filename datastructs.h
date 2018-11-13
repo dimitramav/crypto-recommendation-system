@@ -42,7 +42,7 @@ class Cosine : public DataVector{
 typedef unordered_map <string, list <DataVector *> >HashTable;
 
 //general functions for both lsh and cube
-void make_table_hnumber(double ** ,int,int,int);
+double ** make_table_hnumber(double ** ,int,int,int);
 vector <double> ** make_table_hvector(vector <double> **, int, int, int);
 void print_table_hnumber(double ** , int ,int);
 void print_table_hvector(vector <double> **, int, int, int);
