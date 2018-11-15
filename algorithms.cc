@@ -37,6 +37,7 @@ map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * que
 				neighbour=dataset[i];
 			}
 			points_checked++;
+			cout << dataset[i]->name_accessor()<< "      " << distance << endl;
 		}
 		else
 			break;
@@ -63,5 +64,22 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
         dataset_vector[*it]->set_centroid();   //set centroid DELETE IT 
         Cluster * cluster = new Cluster(dataset_vector[*it]);  //initialize new cluster with the random centroid
         cluster_vector.push_back(cluster);
+	}
+}
+
+void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector,string metric)
+{
+	map <DataVector *,double> true_neighbour;
+	vector <DataVector *> centroid_vector; 
+	for(unsigned int i=0;i<cluster_vector.size();i++)  //vector with centroids for compatibility reasons
+	{
+		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
+	}
+	
+	for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
+	{
+		true_neighbour=trueNN(centroid_vector,dataset_vector[i],metric);
+		cout<< "true : "<<true_neighbour.begin()->first->name_accessor() << " :" << true_neighbour.begin()->second << endl;
+		getchar();
 	}
 }

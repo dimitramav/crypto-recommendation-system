@@ -49,12 +49,12 @@ class Cosine : public DataVector{
 
 class Cluster{
 	protected:
-		string centroid;
+		DataVector * centroid;
 		list<DataVector*> cluster_content;
 	public:
 		Cluster(DataVector *);
 		~Cluster();
-		string centroid_accessor();
+		DataVector * centroid_accessor();
 		list <DataVector *> content_accessor();
 };
 
@@ -77,4 +77,5 @@ int initialize_params(string , map <string,int> & );
 //algorithms
 map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
+void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iterator>
 #include <string>
 #include <random>
@@ -94,6 +95,7 @@ int DataVector::centroid_accessor()
 Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
 {
 	int number;
+	string word;
 	/* 1.initialize name */
 	if (vector_name.compare("item_id") == 0)
 	{
@@ -109,8 +111,15 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 	
 	// convert line to a stream
 	stringstream in( line );
-	while ( in >> number )
-		v.push_back( number );
+	int counter = 0; 
+	while(getline(in,word,',')){
+		if(counter ==0 )
+		{
+			counter++; 
+			continue;  //ignore dimension
+		}
+		v.push_back(atof(word.c_str()));
+    }
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -132,6 +141,7 @@ Euclidean::~Euclidean(){}
 Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr)
 {
 	int number;
+	string word;
 	/* 1.initialize name */
 	if (vector_name.compare("item_id") == 0)
 	{
@@ -147,9 +157,15 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 	
 	// convert line to a stream
 	stringstream in( line );
-	while ( in >> number )
-		v.push_back( number );
-
+	int counter = 0; 
+	while(getline(in,word,',')){
+		if(counter ==0 )
+		{
+			counter++; 
+			continue;  //ignore dimension
+		}
+		v.push_back(atof(word.c_str()));
+    }
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -171,13 +187,13 @@ Cosine::~Cosine(){}
 /* Cluster */
 
 Cluster::Cluster(DataVector * point){
-	centroid = point->name_accessor();
+	centroid = point;
 	cluster_content.push_back(point);
 }
 
 Cluster::~Cluster(){}
 
-string Cluster::centroid_accessor()
+DataVector * Cluster::centroid_accessor()
 {
 	return centroid;
 }
@@ -260,15 +276,16 @@ double find_radius(string line)
 }
 
 int find_dimension(string line)
-   {
-   	int d=0;
-   	for(unsigned int i = 0; i < line.length(); i++)
+{
+   	stringstream ss(line);
+   	int d =0;
+   	int i;
+   	istringstream input(line);
+   	string word;
+   	while(getline(input,word,','))
    	{
-   		if (isblank(line[i]))
-   		{
-			d++;               //find dimension
-		}
-	}
+    	d++;  //number of commas is the dimension of the vector
+    }
 	return d;
 }
 

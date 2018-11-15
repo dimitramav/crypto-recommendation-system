@@ -82,6 +82,8 @@ int main(int argc, char * argv[])
 		if(dimension==0)
 		{
 			dimension=find_dimension(line);
+			cout << dimension<< endl;
+			getchar();
 			/* 5. INITIALIZE TABLES */
 			if(metric.compare("cosine")==0) //cosine metric
 			{
@@ -114,7 +116,6 @@ int main(int argc, char * argv[])
 
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	
-	//lloyds_assignment(dataset_vector,)
+	lloyds_assignment(dataset_vector,cluster_vector,metric);
 
 }
