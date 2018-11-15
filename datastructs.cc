@@ -7,7 +7,6 @@
 #include <numeric>
 #include <vector>
 #include <unordered_map>
-#include <sstream>
 #include <functional>
 #include <algorithm>	
 #include <cmath> 
@@ -73,6 +72,21 @@ void DataVector::print_vector()
 		cout << " " << *it;
 
 	cout << endl;
+}
+
+void DataVector::set_centroid()
+{
+	is_centroid=1; 
+}
+
+void DataVector::remove_centroid()
+{
+	is_centroid=0;
+}
+
+int DataVector::centroid_accessor()
+{
+	return is_centroid;
 }
 
 /* Euclidean */
@@ -153,6 +167,25 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 
 Cosine::~Cosine(){}
 
+
+/* Cluster */
+
+Cluster::Cluster(DataVector * point){
+	centroid = point->name_accessor();
+	cluster_content.push_back(point);
+}
+
+Cluster::~Cluster(){}
+
+string Cluster::centroid_accessor()
+{
+	return centroid;
+}
+
+list <DataVector *> Cluster::content_accessor()
+{
+	return cluster_content;
+}
 /*GENERAL FUNCTIONS*/
 
 
@@ -305,30 +338,21 @@ double cosine_distance(vector<double> a, vector <double> b)
 	return 1.0 - cosine_distance;
 }
 
-map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * querypoint,string metric)
-{
-	DataVector * neighbour;
-	int points_checked=0;
-	map <DataVector * , double> nearest_neighbour;
-	double distance;
-	double minimum_distance=numeric_limits<double>::max(); //initialize minimum distance for approximateNN
-	for (unsigned int i=0;i<dataset.size();i++)
-	{
-		if(points_checked <10000)
-		{
-			distance=vectors_distance(metric,querypoint->point_accessor(),dataset[i]->point_accessor());
-			if(distance<minimum_distance)
-			{
-				minimum_distance=distance;
-				neighbour=dataset[i];
-			}
-			points_checked++;
-		}
-		else
-			break;
-	}
-	//cout << neighbour->name_accessor() <<" has nearest neighbour " << minimum_distance << endl;
-	nearest_neighbour.insert ( pair<DataVector *,double>(neighbour,minimum_distance) );
-	return nearest_neighbour;
 
+
+
+int initialize_params(string configuration_path, map <string,int>& parameters)
+{
+	string line;               
+	ifstream configuration;
+	configuration.open(configuration_path.c_str());  //convert string to const char *
+	if (!configuration.is_open())
+	{
+		return 0;
+	}
+	while (getline(configuration,line))
+	{
+		find_parameter(line,parameters);
+	}
+	return 1;
 }

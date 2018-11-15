@@ -22,7 +22,8 @@ int main(int argc, char * argv[])
 	int dimension=0;
 	string metric;
 	map<string,int> parameters;
-	vector <DataVector *> dataset_vectors;
+	vector <DataVector *> dataset_vector;
+	vector <Cluster *> cluster_vector;
 	static struct option long_options[] = {
 		{"i",required_argument,NULL  ,  'i' },
 		{"c",required_argument,NULL,  'c' },
@@ -65,17 +66,8 @@ int main(int argc, char * argv[])
 	}
 	
 	/* 3. READ CONFIGURATION FILE */
-	configuration.open(configuration_path.c_str());  //convert string to const char *
-	if (!configuration.is_open())
-	{
-		cout << "Failed to open file." << endl;
-		return 1;
-	}
-	while (getline(configuration,line))
-	{
-		find_parameter(line,parameters);
-	}
-	
+	if(!initialize_params(configuration_path,parameters))
+		cout << "Failed to open file." << endl;;
 
  	/* 4. READ DATASET */
    	input.open(input_path.c_str());  //convert string to const char *
@@ -96,19 +88,16 @@ int main(int argc, char * argv[])
 				/* 2. TABLE FOR r */	
 				
 				hr = make_table_hvector(hr,dimension,1,parameters["number_of_hashfunctions"]);
-				print_table_hvector(hr,dimension,1,parameters["number_of_hashfunctions"]);
+				//print_table_hvector(hr,dimension,1,parameters["number_of_hashfunctions"]);
 			}
 			else
 			{
-				/* 2. TABLE FOR t */
-				ht = new double * [1];
-				for(int i = 0;i<1;i++)
-					ht[i] = new double[parameters["number_of_hashfunctions"]];
-				make_table_hnumber(ht,parameters["w"],1,parameters["number_of_hashfunctions"]);
+				/* 2. TABLE FOR t */				
+				ht = make_table_hnumber(ht,parameters["w"],1,parameters["number_of_hashfunctions"]);
 				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
 				/*4. TABLE FOR v */
 				hv = make_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
-				print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
+				//print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
 			}
 		}
 		if(metric.compare("cosine")==0)
@@ -120,7 +109,12 @@ int main(int argc, char * argv[])
 			datapoint = new Euclidean(line,"item_id",parameters["number_of_hashfunctions"],1,hv,ht,parameters["w"]);
 
 		}
-	dataset_vectors.push_back(datapoint);   
-
+		dataset_vector.push_back(datapoint);   
 	}
+
+	/* 5. RANDOM INITIALIZATION*/ 
+	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
+	
+	//lloyds_assignment(dataset_vector,)
+
 }
