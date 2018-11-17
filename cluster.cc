@@ -117,5 +117,6 @@ int main(int argc, char * argv[])
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
 	lloyds_assignment(dataset_vector,cluster_vector,metric);
+	lloyds_update(cluster_vector);
 
 }

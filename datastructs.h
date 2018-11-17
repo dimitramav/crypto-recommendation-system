@@ -14,12 +14,13 @@ protected:
 	vector<double> v;
 	vector<int> h;
 	bool is_centroid; 
-	string has_centroid; //belongs to a cluster (is not centroid)
+	int cluster_number; //belongs to a cluster (is not centroid)
 	set<DataVector* > cluster; //if it is centroid=> list of datavectors
 public:
 	//virtual void func() const=0;
 	//DataVector(string,string,int,int,vector <double> **, double **,int);
 	DataVector();
+	DataVector(vector <double>);
 	~DataVector();
 	static int no_of_queryset;
 	static int no_of_dataset;
@@ -30,6 +31,8 @@ public:
 	void set_centroid();
 	void remove_centroid();
 	int centroid_accessor();
+	void change_cluster_number(int);
+	int cluster_number_accessor();
 };
 
 
@@ -56,6 +59,10 @@ class Cluster{
 		~Cluster();
 		DataVector * centroid_accessor();
 		list <DataVector *> content_accessor();
+		void add_to_cluster(DataVector *);
+		void print_cluster();
+		void change_centroid(DataVector *);
+		DataVector * kmeans();
 };
 
 typedef unordered_map <string, list <DataVector *> >HashTable;
@@ -78,4 +85,5 @@ int initialize_params(string , map <string,int> & );
 map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
 void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
+void lloyds_update(vector <Cluster *> &);
 

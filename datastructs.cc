@@ -25,6 +25,11 @@ int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 DataVector::DataVector(){}
+DataVector::DataVector(vector <double> new_vector)
+{
+	v=new_vector;
+	name = "external_centroid";
+}
 DataVector::~DataVector()
 {
 	//cout << "delete " << name_accessor()<<endl;
@@ -90,6 +95,17 @@ int DataVector::centroid_accessor()
 	return is_centroid;
 }
 
+void DataVector::change_cluster_number(int new_cluster)
+{
+	cluster_number= new_cluster;
+	return;
+}
+
+int DataVector::cluster_number_accessor()
+{
+	return cluster_number;
+
+}
 /* Euclidean */
 
 Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
@@ -119,7 +135,7 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 			continue;  //ignore dimension
 		}
 		v.push_back(atof(word.c_str()));
-    }
+	}
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -129,6 +145,7 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 		}
 	}
 
+	cluster_number =-1;
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -165,7 +182,7 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 			continue;  //ignore dimension
 		}
 		v.push_back(atof(word.c_str()));
-    }
+	}
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -177,7 +194,8 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 				h.push_back(0); 
 		}
 	}
-	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
+	cluster_number=-1;
+	//copy(v.begin(),v.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
 
@@ -202,6 +220,53 @@ list <DataVector *> Cluster::content_accessor()
 {
 	return cluster_content;
 }
+
+void Cluster::add_to_cluster(DataVector * point)
+{
+	cluster_content.push_back(point);
+}
+
+void Cluster::print_cluster()
+{
+	// for (auto v : cluster_content)
+ //    {
+ //        cout << v->name_accessor() << "  ";
+ //    }
+	cout<< cluster_content.size() << endl;
+	getchar();
+
+}
+
+void Cluster::change_centroid(DataVector * new_centroid)
+{
+	centroid = new_centroid;
+	return;
+}
+
+DataVector * Cluster::kmeans()
+{
+	vector <double> mean_vector;
+	int dimension = cluster_content.front()->point_accessor().size(); //dimension of mean vector
+	for (int i =0; i<dimension;i++)  //initialize mean vector
+	{
+		mean_vector.push_back(0);
+	}
+	for ( auto v : cluster_content)
+	{
+		for (int i =0; i< v->point_accessor().size();i++)
+		{
+			mean_vector[i]= mean_vector[i] +v->point_accessor()[i];
+		}
+	}
+	for (int i =0; i<dimension;i++)
+	{
+		mean_vector[i]= mean_vector[i] / cluster_content.size();
+		//cout << mean_vector[i] << "  " ;
+	}
+	//getchar();
+ 	DataVector * mean_point = new DataVector(mean_vector);
+ 	return mean_point; 
+}
 /*GENERAL FUNCTIONS*/
 
 
@@ -215,68 +280,68 @@ double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 	for (int i=0; i<rows; i++)
 		for(int x=0; x<columns; x++)
 			ht[i][x]=distribution(generator);
-	return ht;
-}
-
-void print_table_hnumber(double ** ht,int rows,int columns)
-{
-	for (int i=0; i<rows; i++)
-	{
-		for(int x=0; x<columns; x++)
-			cout << ht[i][x]<< "   ";
-		cout << endl;
+		return ht;
 	}
-	return;	
-}
 
-vector <double> ** make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
-{	
-	hv = new vector <double> * [1];
-	for(int i = 0;i<1;i++)
-		hv[i] = new vector <double> [columns];
-	
-	default_random_engine generator;
-	normal_distribution<double> distribution(0.0,1.0);
-	for (int i=0; i<rows; i++)
-		for(int x=0; x<columns; x++)
-		{
-			for (int z=0; z<dimension; z++)
-			{
-				hv[i][x].push_back(distribution(generator));  				
-			}
-		}
-	return hv;
-}
-
-void print_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
-{	
-	for (int i=0; i<rows; i++)
-		for(int x=0; x<columns; x++)
-		{
-			for (int z=0; z<dimension; z++)
-			{	
-				copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
-			}
-			getchar();
-		}			
-	return;
-}
-
-double find_radius(string line)
-{
-	istringstream ss(line);
-	string::size_type sz;
-	istream_iterator<std::string> begin(ss), end;    		
-	vector<string> arrayTokens(begin, end);
-	if(arrayTokens[0].compare("Radius:")==0)
+	void print_table_hnumber(double ** ht,int rows,int columns)
 	{
+		for (int i=0; i<rows; i++)
+		{
+			for(int x=0; x<columns; x++)
+				cout << ht[i][x]<< "   ";
+			cout << endl;
+		}
+		return;	
+	}
+
+	vector <double> ** make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
+	{	
+		hv = new vector <double> * [1];
+		for(int i = 0;i<1;i++)
+			hv[i] = new vector <double> [columns];
+
+		default_random_engine generator;
+		normal_distribution<double> distribution(0.0,1.0);
+		for (int i=0; i<rows; i++)
+			for(int x=0; x<columns; x++)
+			{
+				for (int z=0; z<dimension; z++)
+				{
+					hv[i][x].push_back(distribution(generator));  				
+				}
+			}
+			return hv;
+		}
+
+		void print_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
+		{	
+			for (int i=0; i<rows; i++)
+				for(int x=0; x<columns; x++)
+				{
+					for (int z=0; z<dimension; z++)
+					{	
+						copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
+					}
+					getchar();
+				}			
+				return;
+			}
+
+			double find_radius(string line)
+			{
+				istringstream ss(line);
+				string::size_type sz;
+				istream_iterator<std::string> begin(ss), end;    		
+				vector<string> arrayTokens(begin, end);
+				if(arrayTokens[0].compare("Radius:")==0)
+				{
    		return stod(arrayTokens[1],&sz); //cast string to double
    	}
    	return 0.0;
-}
+   }
 
-int find_dimension(string line)
-{
+   int find_dimension(string line)
+   {
    	stringstream ss(line);
    	int d =0;
    	int i;
@@ -286,7 +351,7 @@ int find_dimension(string line)
    	{
     	d++;  //number of commas is the dimension of the vector
     }
-	return d;
+    return d;
 }
 
 string find_metric(string line)
@@ -300,38 +365,38 @@ string find_metric(string line)
    		return arrayTokens[1]; //return metric
    	}
    	return "{default_euclidean}"; //default is euclidean
-}
+   }
 
-void find_parameter(string line,map<string,int> &parameters)
-{
-	string delimiter = ":";
-	size_t pos = 0;
-	string parameter_name;
-	while ((pos = line.find(delimiter)) != string::npos) {
-		parameter_name = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-	}
+   void find_parameter(string line,map<string,int> &parameters)
+   {
+   	string delimiter = ":";
+   	size_t pos = 0;
+   	string parameter_name;
+   	while ((pos = line.find(delimiter)) != string::npos) {
+   		parameter_name = line.substr(0, pos);
+   		line.erase(0, pos + delimiter.length());
+   	}
 	parameters[parameter_name] = stoi(line); //insert parameter in the map
 	return;
 }
 
 double vectors_distance(string metric,vector<double> a, vector<double> b)
 {
-   	double distance;
-   	if(metric.compare("{cosine}")==0)
-   	{
-   		distance=cosine_distance(a,b);
-   	}
-   	else
-   	{
-   		distance=euclidean_distance(a,b);
-   	}
-   	return distance;
+	double distance;
+	if(metric.compare("{cosine}")==0)
+	{
+		distance=cosine_distance(a,b);
+	}
+	else
+	{
+		distance=euclidean_distance(a,b);
+	}
+	return distance;
 }
-   
+
 double	euclidean_distance(vector<double> a, vector<double> b)
 {
-   	vector<double>	auxiliary;
+	vector<double>	auxiliary;
 
 	std::transform (a.begin(), a.end(), b.begin(), std::back_inserter(auxiliary),//
 		[](double element1, double element2) {return pow((element1-element2),2);});
