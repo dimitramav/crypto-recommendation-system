@@ -82,8 +82,6 @@ int main(int argc, char * argv[])
 		if(dimension==0)
 		{
 			dimension=find_dimension(line);
-			cout << dimension<< endl;
-			getchar();
 			/* 5. INITIALIZE TABLES */
 			if(metric.compare("cosine")==0) //cosine metric
 			{
