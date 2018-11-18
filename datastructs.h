@@ -20,7 +20,7 @@ public:
 	//virtual void func() const=0;
 	//DataVector(string,string,int,int,vector <double> **, double **,int);
 	DataVector();
-	DataVector(vector <double>);
+	DataVector(vector <double>,int);
 	~DataVector();
 	static int no_of_queryset;
 	static int no_of_dataset;
@@ -28,6 +28,7 @@ public:
 	string key_accessor(int,int);  
 	string name_accessor();
 	vector <double> point_accessor();
+	void set_point(vector <double>);
 	void set_centroid();
 	void remove_centroid();
 	int centroid_accessor();
@@ -54,6 +55,7 @@ class Cluster{
 	protected:
 		DataVector * centroid;
 		list<DataVector*> cluster_content;
+		bool centroid_is_external=0;
 	public:
 		Cluster(DataVector *);
 		~Cluster();
@@ -61,8 +63,12 @@ class Cluster{
 		list <DataVector *> content_accessor();
 		void add_to_cluster(DataVector *);
 		void print_cluster();
-		void change_centroid(DataVector *);
-		DataVector * kmeans();
+		void create_external_centroid(DataVector *);
+		void change_external_centroid(vector <double>);
+		vector <double> kmeans(int);
+		void remove_from_cluster(DataVector *);
+		bool is_external();
+		void make_external();
 };
 
 typedef unordered_map <string, list <DataVector *> >HashTable;

@@ -25,10 +25,10 @@ int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 DataVector::DataVector(){}
-DataVector::DataVector(vector <double> new_vector)
+DataVector::DataVector(vector <double> new_vector,int cluster)
 {
 	v=new_vector;
-	name = "external_centroid";
+	name="external_centroid" + to_string(cluster);
 }
 DataVector::~DataVector()
 {
@@ -67,6 +67,11 @@ string DataVector::name_accessor(){
 	return name;
 }
 
+void DataVector::set_point(vector <double> new_v)
+{
+	v = new_v;
+	return;
+}
 void DataVector::print_vector()
 {
 
@@ -206,7 +211,8 @@ Cosine::~Cosine(){}
 
 Cluster::Cluster(DataVector * point){
 	centroid = point;
-	cluster_content.push_back(point);
+	centroid_is_external = 0; 
+	//cluster_content.push_back(point);
 }
 
 Cluster::~Cluster(){}
@@ -228,22 +234,27 @@ void Cluster::add_to_cluster(DataVector * point)
 
 void Cluster::print_cluster()
 {
-	// for (auto v : cluster_content)
- //    {
- //        cout << v->name_accessor() << "  ";
- //    }
+	 for (auto v : cluster_content)
+    {
+        cout << v->name_accessor() << "  ";
+    }
 	cout<< cluster_content.size() << endl;
 	getchar();
 
 }
 
-void Cluster::change_centroid(DataVector * new_centroid)
+void Cluster::create_external_centroid(DataVector * new_centroid)
 {
 	centroid = new_centroid;
 	return;
 }
 
-DataVector * Cluster::kmeans()
+void Cluster::change_external_centroid(vector <double> centroid_vector)
+{
+	centroid->set_point(centroid_vector);
+
+}
+vector <double> Cluster::kmeans(int cluster)
 {
 	vector <double> mean_vector;
 	int dimension = cluster_content.front()->point_accessor().size(); //dimension of mean vector
@@ -264,8 +275,22 @@ DataVector * Cluster::kmeans()
 		//cout << mean_vector[i] << "  " ;
 	}
 	//getchar();
- 	DataVector * mean_point = new DataVector(mean_vector);
- 	return mean_point; 
+ 	return mean_vector; 
+}
+
+void Cluster::remove_from_cluster(DataVector * point)
+{
+	cluster_content.remove(point);
+}
+
+bool Cluster::is_external()
+{
+	return centroid_is_external;
+}
+
+void Cluster::make_external()
+{
+	centroid_is_external = 1; 
 }
 /*GENERAL FUNCTIONS*/
 
