@@ -37,6 +37,7 @@ map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * que
 			{
 				second_minimum_distance=first_minimum_distance;
 				first_minimum_distance=distance;
+				querypoint->change_cluster_number(i);
 				neighbour=dataset[i];
 			}
 			else if(distance>first_minimum_distance && distance < second_minimum_distance)
@@ -97,26 +98,20 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 		new_objective_distance  = 0.0;
 		for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
 		{
+			if(dataset_vector[i]->cluster_number_accessor()!=-1)
+			{
+				int old_cluster = dataset_vector[i]->cluster_number_accessor();
+				//cout << "old_cluster " << old_cluster << endl;
+				cluster_vector[old_cluster]->remove_from_cluster(dataset_vector[i]);
+			}
 			true_neighbour=trueNN(centroid_vector,dataset_vector[i],metric);
 			//cout<< "true : "<<true_neighbour.begin()->first->name_accessor() << " :" << true_neighbour.begin()->second << endl;
-			for (unsigned int cluster=0;cluster<cluster_vector.size();cluster++)  
-			{
-				if(true_neighbour.begin()->first->name_accessor().compare(cluster_vector[cluster]->centroid_accessor()->name_accessor())==0)
-				{
 					//cout << true_neighbour.begin()->first->name_accessor()<< "vs "<< cluster_vector[cluster]->centroid_accessor()->name_accessor() << endl	;
-					if(dataset_vector[i]->cluster_number_accessor()!=-1)
-					{
-						int old_cluster = dataset_vector[i]->cluster_number_accessor();
-						//cout << "old_cluster " << old_cluster << endl;
-						cluster_vector[old_cluster]->remove_from_cluster(dataset_vector[i]);
-					}
-					dataset_vector[i]->change_cluster_number(cluster);
-					cluster_vector[cluster]->add_to_cluster(dataset_vector[i]); //add point to cluster	
-					new_objective_distance += true_neighbour.begin()->second * true_neighbour.begin()->second;
-					//getchar();
+			int new_cluster = dataset_vector[i]->cluster_number_accessor();
+			cluster_vector[new_cluster]->add_to_cluster(dataset_vector[i]); //add point to cluster	
+			new_objective_distance += true_neighbour.begin()->second * true_neighbour.begin()->second;
+			//getchar();
 					
-				}
-			}
 		}
 		//getchar();
 		/*for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
@@ -164,10 +159,11 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
 	double silhouette;
 	int min_cluster;
 	int neighbour_cluster;
-	double final_distance; 
+	double final_silhouette; 
 	double distance_a;
 	double distance_b;
-	
+	double mean_silhouette;
+	mean_silhouette = 0.0;
 	for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
 	{		
 		min_cluster = dataset_vector[i]->cluster_number_accessor();
@@ -176,13 +172,9 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
         	distance_a += vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
     	}
     	distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
-    	//cout << point_a->get_first_distance() << " " << point_a->get_second_distance()<< endl;	
-  
-    	//cout << "min_cluster "<<min_cluster<<" distance_a "<< distance_a << endl;
     	neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor();
-    	//if (neighbour_cluster == -1)
-    	//	neighbour_cluster = min_cluster;
-    	//cout << neighbour_cluster << endl;
+    	if (neighbour_cluster == -1)
+    		neighbour_cluster = min_cluster;
     	for (auto point_a : cluster_vector[neighbour_cluster]->content_accessor() )
     	{
         	
@@ -190,8 +182,10 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
     	}
     	distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
     	
-    	final_distance = (distance_b - distance_a)/max(distance_b,distance_a);
-    	cout << final_distance << endl;
+    	final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
+    	mean_silhouette+=final_silhouette;
+    	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
-
+	mean_silhouette = mean_silhouette/dataset_vector.size();
+	//cout << mean_silhouette<< endl;
 }
