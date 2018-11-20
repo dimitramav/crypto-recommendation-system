@@ -113,7 +113,9 @@ int main(int argc, char * argv[])
 	}
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
+	cout << "before "<< endl;
 	lloyds_assignment(dataset_vector,cluster_vector,metric);
-	silhouette_evaluation(dataset_vector);
+	cout << "after " << endl;
+	silhouette_evaluation(dataset_vector,cluster_vector,metric);
 
 }

@@ -14,9 +14,8 @@ protected:
 	vector<double> v;
 	vector<int> h;
 	bool is_centroid; 
-	double first_silhouette_distance; 
-	double second_silhouette_distance; 
 	int cluster_number; //belongs to a cluster (is not centroid)
+	int neighbour_cluster; 
 	set<DataVector* > cluster; //if it is centroid=> list of datavectors
 public:
 	//virtual void func() const=0;
@@ -35,11 +34,9 @@ public:
 	void remove_centroid();
 	int centroid_accessor();
 	void change_cluster_number(int);
+	void change_neighbour_cluster(int);
 	int cluster_number_accessor();
-	void set_first_distance(double);
-	void set_second_distance(double);
-	double get_first_distance();
-	double get_second_distance();
+	int neighbour_cluster_accessor();
 };
 
 
@@ -99,7 +96,6 @@ map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
 void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
 void lloyds_update(vector <Cluster *> &);
-void silhouette_distance(vector <Cluster *> &,string);
-void silhouette_evaluation(vector <DataVector *> &);
+void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 
 
