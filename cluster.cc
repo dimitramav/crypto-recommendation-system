@@ -111,9 +111,9 @@ int main(int argc, char * argv[])
 		}
 		dataset_vector.push_back(datapoint);   
 	}
-	getchar();
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
 	lloyds_assignment(dataset_vector,cluster_vector,metric);
+	silhouette_evaluation(dataset_vector);
 
 }

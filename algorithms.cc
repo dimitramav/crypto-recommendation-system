@@ -67,10 +67,41 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
     }
 }
 
+void silhouette_distance(vector <Cluster *> & cluster_vector,string metric)
+{
+	double distance=0.0; 
+	for (unsigned int cluster=0;cluster<cluster_vector.size();cluster++)  //each cluster
+	{
+
+	 	for (auto point_a : cluster_vector[cluster]->content_accessor() )
+    	{
+        	for (auto point_b : cluster_vector[cluster]->content_accessor() )
+    		{
+        		distance += vectors_distance(metric,point_a->point_accessor(),point_b->point_accessor());
+    		}
+    		distance = distance/cluster_vector[cluster]->content_accessor().size();
+
+    		if (distance < point_a->get_first_distance())
+    		{
+    			point_a->set_second_distance(point_a->get_first_distance());
+    			point_a->set_first_distance(distance);
+    		}
+    		else if (point_a->get_first_distance()<distance && distance<point_a->get_second_distance())
+    		{
+    			point_a->set_second_distance(point_a->get_first_distance());
+    		}
+    		//cout << point_a->get_first_distance() << " " << point_a->get_second_distance()<< endl;	
+    	}
+    	
+	}
+	return;
+}
+
 void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector,string metric)
 {
 	map <DataVector *,double> true_neighbour;
-	vector <DataVector *> centroid_vector; 
+	vector <DataVector *> centroid_vector;
+	vector <double> silhouette_vector; 
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 	{
 		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
@@ -81,7 +112,9 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 	do
 	{	
 		if (counter !=0)
-			previous_objective_distance = new_objective_distance;	
+		{
+			previous_objective_distance = new_objective_distance;
+		}
 		new_objective_distance  = 0.0;
 		for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
 		{
@@ -106,19 +139,21 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 				}
 			}
 		}
+		silhouette_distance(cluster_vector,metric);
+		//getchar();
 		/*for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{
 			cluster_vector[i]->print_cluster();
 			getchar();
 		}*/
-		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
+		//cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
 		lloyds_update(cluster_vector);
 		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{
 			centroid_vector[i] = cluster_vector[i]->centroid_accessor();
 		}
 		counter++;
-	}while(new_objective_distance!=previous_objective_distance);
+	}while(new_objective_distance!=	previous_objective_distance);
 }
 
 void lloyds_update(vector <Cluster *> & cluster_vector)
@@ -143,5 +178,16 @@ void lloyds_update(vector <Cluster *> & cluster_vector)
 		}
 		//cluster_vector[i]->centroid_accessor()->print_vector();
 		//getchar();
+	}
+}
+
+void silhouette_evaluation(vector <DataVector *> & dataset_vector)
+{
+	double silhouette;
+	for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
+	{
+		DataVector * point = dataset_vector[i];
+		silhouette = (point->get_second_distance() - point ->get_first_distance()) /max(point->get_first_distance(),point->get_second_distance());
+		cout << point->name_accessor() << "  " << silhouette << endl;
 	}
 }

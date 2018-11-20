@@ -14,6 +14,8 @@ protected:
 	vector<double> v;
 	vector<int> h;
 	bool is_centroid; 
+	double first_silhouette_distance; 
+	double second_silhouette_distance; 
 	int cluster_number; //belongs to a cluster (is not centroid)
 	set<DataVector* > cluster; //if it is centroid=> list of datavectors
 public:
@@ -34,6 +36,10 @@ public:
 	int centroid_accessor();
 	void change_cluster_number(int);
 	int cluster_number_accessor();
+	void set_first_distance(double);
+	void set_second_distance(double);
+	double get_first_distance();
+	double get_second_distance();
 };
 
 
@@ -55,7 +61,7 @@ class Cluster{
 	protected:
 		DataVector * centroid;
 		list<DataVector*> cluster_content;
-		bool centroid_is_external=0;
+		bool centroid_is_external;
 	public:
 		Cluster(DataVector *);
 		~Cluster();
@@ -69,6 +75,7 @@ class Cluster{
 		void remove_from_cluster(DataVector *);
 		bool is_external();
 		void make_external();
+		
 };
 
 typedef unordered_map <string, list <DataVector *> >HashTable;
@@ -92,4 +99,7 @@ map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
 void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
 void lloyds_update(vector <Cluster *> &);
+void silhouette_distance(vector <Cluster *> &,string);
+void silhouette_evaluation(vector <DataVector *> &);
+
 

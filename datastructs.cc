@@ -29,6 +29,8 @@ DataVector::DataVector(vector <double> new_vector,int cluster)
 {
 	v=new_vector;
 	name="external_centroid" + to_string(cluster);
+	first_silhouette_distance = 1000.0;
+	second_silhouette_distance = 1000.0;
 }
 DataVector::~DataVector()
 {
@@ -111,6 +113,29 @@ int DataVector::cluster_number_accessor()
 	return cluster_number;
 
 }
+
+void DataVector::set_first_distance(double distance)
+{
+	first_silhouette_distance=distance; 
+	return;
+}
+
+void DataVector::set_second_distance(double distance)
+{
+
+	second_silhouette_distance=distance; 
+	return;
+}
+
+double DataVector::get_first_distance()
+{
+	return first_silhouette_distance; 
+}
+
+double DataVector::get_second_distance()
+{
+	return second_silhouette_distance; 
+}
 /* Euclidean */
 
 Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
@@ -151,6 +176,8 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 	}
 
 	cluster_number =-1;
+	first_silhouette_distance = 1000.0;
+	second_silhouette_distance = 1000.0;
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -200,6 +227,8 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 		}
 	}
 	cluster_number=-1;
+	first_silhouette_distance = 1000.0;
+	second_silhouette_distance = 1000.0;
 	//copy(v.begin(),v.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -212,6 +241,7 @@ Cosine::~Cosine(){}
 Cluster::Cluster(DataVector * point){
 	centroid = point;
 	centroid_is_external = 0; 
+	
 	//cluster_content.push_back(point);
 }
 
@@ -292,6 +322,11 @@ void Cluster::make_external()
 {
 	centroid_is_external = 1; 
 }
+
+
+
+
+
 /*GENERAL FUNCTIONS*/
 
 
