@@ -13,10 +13,9 @@ protected:
 	string name;
 	vector<double> v;
 	vector<int> h;
-	bool is_centroid; 
+	int is_centroid; 
 	int cluster_number; //belongs to a cluster (is not centroid)
 	int neighbour_cluster; 
-	set<DataVector* > cluster; //if it is centroid=> list of datavectors
 public:
 	//virtual void func() const=0;
 	//DataVector(string,string,int,int,vector <double> **, double **,int);
@@ -97,5 +96,6 @@ void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
 void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
 void lloyds_update(vector <Cluster *> &);
 void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
-
+void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
+void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 

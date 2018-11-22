@@ -16,6 +16,7 @@
 #include <set>
 #include <list>
 #include <stdlib.h>
+#include <random>
 #include <ctime>
 #include "datastructs.h"
 
@@ -76,6 +77,65 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
     }
 }
 
+void set_centroid(vector <DataVector *> & dataset_vector,vector <Cluster*> & cluster_vector, int new_centroid)
+{
+	dataset_vector[new_centroid]->set_centroid();
+    Cluster * cluster = new Cluster(dataset_vector[starting_centroid]);
+    cluster_vector.push_back(cluster);
+}
+void plus_initialization(vector <DataVector *> & dataset_vector, vector <Cluster *> & cluster_vector, int k,string metric)
+{
+	random_device rd;  //Will be used to obtain a seed for the random number engine
+    mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    uniform_int_distribution<> dis(0, dataset_vector.size());
+    vector <double> minimum_distance;
+    double distance; 
+    double max_sum;
+    default_random_engine generator;
+    //initialize vector with minimum distances
+    for ( int point = 0;point<dataset_vector.size();point++)
+    {
+    	minimum_distance.push_back(numeric_limits<double>::max());
+    }
+    //initialize first centroid
+    int starting_centroid = dis(gen);
+    set_centroid(dataset_vector,cluster_vector,starting_centroid);
+    for (int i=0; i<k-1 ;i++)  
+    {
+    	for ( int point = 0;point<dataset_vector.size();point++)
+    	{
+    		if(!dataset_vector[point]->centroid_accessor())  //if it is not centroid
+    		{
+    			for (int x=0;x<cluster_vector.size();x++)  //find minimum distance from current centroids
+    			{
+    				distance=vectors_distance(metric,dataset_vector[point]->point_accessor(),cluster_vector[x]->centroid_accessor()->point_accessor());
+    				if(distance<minimum_distance[point])
+    				{
+    					minimum_distance[point] = distance; 
+    					max_sum+= minimum_distance[point] * minimum_distance[point];
+    				}
+    			}
+    		}
+    		else 
+    		{
+    			minimum_distance[point] = 0.0;
+    		}
+    	}
+    	uniform_real_distribution<> new_dis(0.0, max_sum);
+    	double random_x = new_dis(generator);
+    	max_sum=0;
+    	for ( int point = 0;point<dataset_vector.size();point++)
+    	{
+    		max_sum+=minimum_distance[point];
+    		if(max_sum > random_x)
+    		{
+    			int new_centroid = point; 
+    			set_centroid(dataset_vector,cluster_vector,new_centroid);
+    			break;
+    		}
+    	} 	
+    }
+}
 
 void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector,string metric)
 {
@@ -98,7 +158,7 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 		new_objective_distance  = 0.0;
 		for (unsigned int i=0;i<dataset_vector.size();i++)  //for each datapoint , find nearest centroid
 		{
-			if(dataset_vector[i]->cluster_number_accessor()!=-1)
+			if(dataset_vector[i]->cluster_number_accessor()!=-1)  
 			{
 				int old_cluster = dataset_vector[i]->cluster_number_accessor();
 				//cout << "old_cluster " << old_cluster << endl;
@@ -111,7 +171,7 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 			cluster_vector[new_cluster]->add_to_cluster(dataset_vector[i]); //add point to cluster	
 			new_objective_distance += true_neighbour.begin()->second * true_neighbour.begin()->second;
 			//getchar();
-					
+
 		}
 		//getchar();
 		/*for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
@@ -168,22 +228,22 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
 	{		
 		min_cluster = dataset_vector[i]->cluster_number_accessor();
 		for (auto point_a : cluster_vector[min_cluster]->content_accessor() )
-        {		
-        	distance_a += vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
-    	}
-    	distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
-    	neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor();
-    	if (neighbour_cluster == -1)
-    		neighbour_cluster = min_cluster;
-    	for (auto point_a : cluster_vector[neighbour_cluster]->content_accessor() )
-    	{
-        	
-        	distance_b += vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
-    	}
-    	distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
-    	
-    	final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
-    	mean_silhouette+=final_silhouette;
+		{		
+			distance_a += vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
+		}
+		distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
+		neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor();
+		if (neighbour_cluster == -1)
+			neighbour_cluster = min_cluster;
+		for (auto point_a : cluster_vector[neighbour_cluster]->content_accessor() )
+		{
+
+			distance_b += vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
+		}
+		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
+
+		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
+		mean_silhouette+=final_silhouette;
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
 	mean_silhouette = mean_silhouette/dataset_vector.size();

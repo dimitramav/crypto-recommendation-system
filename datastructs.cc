@@ -29,7 +29,7 @@ DataVector::DataVector(vector <double> new_vector,int cluster)
 {
 	v=new_vector;
 	name="external_centroid" + to_string(cluster);
-	
+
 }
 DataVector::~DataVector()
 {
@@ -166,6 +166,7 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 
 	cluster_number =-1;
 	neighbour_cluster=-1;
+	is_centroid = 0; 
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -216,6 +217,7 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 	}
 	cluster_number=-1;
 	neighbour_cluster = -1;
+	is_centroid = 0; 
 	//copy(v.begin(),v.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }

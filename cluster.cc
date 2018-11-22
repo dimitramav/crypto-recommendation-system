@@ -112,10 +112,9 @@ int main(int argc, char * argv[])
 		dataset_vector.push_back(datapoint);   
 	}
 	/* 5. RANDOM INITIALIZATION*/ 
-	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	cout << "before "<< endl;
-	lloyds_assignment(dataset_vector,cluster_vector,metric);
-	cout << "after " << endl;
-	silhouette_evaluation(dataset_vector,cluster_vector,metric);
+	//random_initialization(dataset_vector,cluster_vector,parameters["k"]);
+	//lloyds_assignment(dataset_vector,cluster_vector,metric);
+	//silhouette_evaluation(dataset_vector,cluster_vector,metric);
+	plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
 
 }
