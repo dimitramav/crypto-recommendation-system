@@ -58,6 +58,7 @@ class Cluster{
 		DataVector * centroid;
 		list<DataVector*> cluster_content;
 		bool centroid_is_external;
+		int modified; 
 	public:
 		Cluster(DataVector *);
 		~Cluster();
@@ -71,6 +72,8 @@ class Cluster{
 		void remove_from_cluster(DataVector *);
 		bool is_external();
 		void make_external();
+		void set_update(int);
+		int is_updated();
 		
 };
 
@@ -98,4 +101,4 @@ void lloyds_update(vector <Cluster *> &);
 void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
-
+void pam_update(vector <Cluster *> &,string);

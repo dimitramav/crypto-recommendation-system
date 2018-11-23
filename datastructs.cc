@@ -312,7 +312,16 @@ void Cluster::make_external()
 	centroid_is_external = 1; 
 }
 
+void Cluster::set_update(int i)
+{
+	modified = i;
+	return;
+}
 
+int Cluster::is_updated()
+{
+	return modified;
+}
 
 
 
