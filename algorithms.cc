@@ -152,7 +152,6 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 	double previous_objective_distance = 1.0;
 	do
 	{	
-		cout << "aaaaaaaaaaaaaa" << endl;
 		if (counter !=0)
 		{
 			previous_objective_distance = new_objective_distance;
@@ -243,7 +242,7 @@ void pam_update(vector <Cluster *> & cluster_vector,string metric)
 
 		double minimum_distance;
 		current_centroid = cluster_vector[i]->centroid_accessor();
-		cout << "old centroid number " << i << " is " <<  cluster_vector[i]->centroid_accessor()->name_accessor();
+		//cout << "old centroid number " << i << " is " <<  cluster_vector[i]->centroid_accessor()->name_accessor();
 		minimum_distance = numeric_limits<double>::max();
 		if(cluster_vector[i]->is_updated())
 		{
@@ -261,7 +260,7 @@ void pam_update(vector <Cluster *> & cluster_vector,string metric)
 					cluster_vector[i]->create_external_centroid(new_centroid);
 				}	
 			}
-			cout << "new centroid number " << i << " is " <<  cluster_vector[i]->centroid_accessor()->name_accessor();
+			//cout << "new centroid number " << i << " is " <<  cluster_vector[i]->centroid_accessor()->name_accessor();
 			//cluster_vector[i]->centroid_accessor()->print_vector();
 			//getchar();
 		}
@@ -303,5 +302,57 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
 	mean_silhouette = mean_silhouette/dataset_vector.size();
-	cout << mean_silhouette<< endl;
+	//cout << mean_silhouette<< endl;
+}
+
+void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vector <Cluster *> & cluster_vector,string metric)
+{
+	map <DataVector *,double> true_neighbour;
+	int old_cluster;
+	vector <DataVector *> centroid_vector;
+	vector <double> silhouette_vector; 
+	double distance;
+	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+	{
+		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
+	}
+	int counter =0;
+	double new_objective_distance = 0.0;
+	double previous_objective_distance = 1.0;
+	do
+	{	
+		if (counter !=0)
+		{
+			previous_objective_distance = new_objective_distance;
+		}
+		for (unsigned int i = 0;i<cluster_vector.size();i++)
+		{
+			cluster_vector[i]->set_update(0);
+		}
+		new_objective_distance  = 0.0;
+		old_cluster = -1; 
+		///////////////////////////////////
+		for(unsigned int cluster_num=0;cluster_num<centroid_vector.size();cluster_num++) //range search for each centroid
+		{
+			for (int i=0;i<L;i++)
+			{
+		
+				string key= centroid_vector[centroid]->key_accessor(i,k);
+				for (auto v : hashtables_vector[i][key])
+				{
+					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
+					if (distance < radius)
+					{
+						cout << centroid_vector[centroid]->name_accessor() << " has " << v->name_accessor() << " distance " << distance << endl;
+						if(v->cluster_number_accessor()!=cluster_num)
+							cluster_vector[centroid]->add_to_cluster(v); //add point to cluster	
+					}	
+				}
+			}
+			getchar();
+		}
+		///////////////////////////////////////////
+		
+		counter++;
+	}while(counter < 1);
 }

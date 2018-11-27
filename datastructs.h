@@ -90,8 +90,9 @@ double euclidean_distance(vector<double>,vector<double>);
 double cosine_distance(vector<double>, vector <double>);
 int find_dimension(string);
 string find_metric(string);	
-void find_parameter(string,map <string,int> &);
-int initialize_params(string , map <string,int> & );
+void find_parameter(string,map <string,double> &);
+int initialize_params(string , map <string,double> & );
+
 
 //algorithms
 map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
@@ -102,3 +103,4 @@ void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 void pam_update(vector <Cluster *> &,string);
+void lsh_assignment(int,int,HashTable *,double,vector <Cluster *> &,string);

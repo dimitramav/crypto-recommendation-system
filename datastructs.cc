@@ -160,7 +160,7 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 	for (int x=0;x<L; x++){
 		for (int i=0;i<k;i++)
 		{
-			h.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0) + t[x][i] )/w));   
+			h.push_back(floor((inner_product(v.begin(),v.end(),hv[x][i].begin(),0.0) + t[x][i]  )/w));   
 		}
 	}
 
@@ -209,7 +209,7 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 	for (int x=0;x<L; x++){
 		for (int i=0;i<k;i++)
 		{
-			if((inner_product(v.begin(),v.end(),hr[x][i].begin(),0)) >= 0)
+			if((inner_product(v.begin(),v.end(),hr[x][i].begin(),0.0)) >= 0)
 				h.push_back(1);  
 			else 
 				h.push_back(0); 
@@ -330,8 +330,8 @@ int Cluster::is_updated()
 
 double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 {
-	ht = new double * [1];
-	for(int i = 0;i<1;i++)
+	ht = new double * [rows];
+	for(int i = 0;i<rows;i++)
 		ht[i] = new double[columns];
 	default_random_engine generator;
 	uniform_real_distribution<double> distribution(0.0,w);
@@ -354,8 +354,8 @@ double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 
 	vector <double> ** make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
 	{	
-		hv = new vector <double> * [1];
-		for(int i = 0;i<1;i++)
+		hv = new vector <double> * [rows];
+		for(int i = 0;i<rows;i++)
 			hv[i] = new vector <double> [columns];
 
 		default_random_engine generator;
@@ -380,7 +380,7 @@ double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 					{	
 						copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
 					}
-					getchar();
+
 				}			
 				return;
 			}
@@ -425,7 +425,7 @@ string find_metric(string line)
    	return "{default_euclidean}"; //default is euclidean
    }
 
-   void find_parameter(string line,map<string,int> &parameters)
+   void find_parameter(string line,map<string,double> &parameters)
    {
    	string delimiter = ":";
    	size_t pos = 0;
@@ -434,7 +434,7 @@ string find_metric(string line)
    		parameter_name = line.substr(0, pos);
    		line.erase(0, pos + delimiter.length());
    	}
-	parameters[parameter_name] = stoi(line); //insert parameter in the map
+	parameters[parameter_name] = stod(line); //insert parameter in the map
 	return;
 }
 
@@ -481,7 +481,7 @@ double cosine_distance(vector<double> a, vector <double> b)
 
 
 
-int initialize_params(string configuration_path, map <string,int>& parameters)
+int initialize_params(string configuration_path, map <string,double>& parameters)
 {
 	string line;               
 	ifstream configuration;
@@ -496,3 +496,4 @@ int initialize_params(string configuration_path, map <string,int>& parameters)
 	}
 	return 1;
 }
+

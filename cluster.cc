@@ -21,7 +21,7 @@ int main(int argc, char * argv[])
 	int first_line=0;
 	int dimension=0;
 	string metric;
-	map<string,int> parameters;
+	map<string,double> parameters;
 	vector <DataVector *> dataset_vector;
 	vector <Cluster *> cluster_vector;
 	static struct option long_options[] = {
@@ -86,35 +86,59 @@ int main(int argc, char * argv[])
 			if(metric.compare("cosine")==0) //cosine metric
 			{
 				/* 2. TABLE FOR r */	
-				
-				hr = make_table_hvector(hr,dimension,1,parameters["number_of_hashfunctions"]);
-				//print_table_hvector(hr,dimension,1,parameters["number_of_hashfunctions"]);
+				hr = make_table_hvector(hr,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
+
+				//print_table_hvector(hr,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
 			}
 			else
 			{
-				/* 2. TABLE FOR t */				
-				ht = make_table_hnumber(ht,parameters["w"],1,parameters["number_of_hashfunctions"]);
+				/* 2. TABLE FOR t */
+				ht = make_table_hnumber(ht,parameters["w"],parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
 				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
 				/*4. TABLE FOR v */
-				hv = make_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
+				hv = make_table_hvector(hv,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
 				//print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
 			}
 		}
 		if(metric.compare("cosine")==0)
 		{
-			datapoint = new Cosine(line,"item_id",parameters["number_of_hashfunctions"],1,hr);
+			datapoint = new Cosine(line,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hr);
 		}			
 		else
 		{
-			datapoint = new Euclidean(line,"item_id",parameters["number_of_hashfunctions"],1,hv,ht,parameters["w"]);
+			datapoint = new Euclidean(line,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hv,ht,parameters["w"]);
 
 		}
 		dataset_vector.push_back(datapoint);   
 	}
+
+	input.close();
+	/* 4. CREATE HASHTABLES */
+	HashTable hashtables_vector[ int(parameters["number_of_hashtables"])];
+	for (unsigned int x=0;x<dataset_vector.size();x++)
+	{
+		DataVector * datapoint=dataset_vector[x];
+		for (int i=0;i< parameters["number_of_hashtables"]; i++)
+		{
+				string key = datapoint->key_accessor(i,parameters["number_of_hashfunctions"]);
+					string name = datapoint->name_accessor();
+				hashtables_vector[i][key].push_back(datapoint);
+		}
+	}
+	/* 5. PRINT HASHTABLES */ 
+	/* for ( unsigned i = 0; i < hashtables_vector[0].bucket_count(); ++i) {
+    	std::cout << "bucket #" << i << " contains:";
+    	for ( auto local_it = hashtables_vector[0].begin(i); local_it!= hashtables_vector[0].end(i); ++local_it )
+      		std::cout <<  " ," << local_it->second.size();
+    std::cout << std::endl;
+  	}*/
+  	
+
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	lloyds_assignment(dataset_vector,cluster_vector,metric);
-	silhouette_evaluation(dataset_vector,cluster_vector,metric);
+	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,parameters["radius"],cluster_vector,metric);
+	//lloyds_assignment(dataset_vector,cluster_vector,metric);
+	//silhouette_evaluation(dataset_vector,cluster_vector,metric);
 	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
 
 }
