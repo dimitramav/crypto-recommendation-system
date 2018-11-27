@@ -5,6 +5,7 @@
 #include <list>
 #include <fstream>
 #include <set>
+#include <utility>
 using namespace std;
 
 
@@ -14,8 +15,8 @@ protected:
 	vector<double> v;
 	vector<int> h;
 	int is_centroid; 
-	int cluster_number; //belongs to a cluster (is not centroid)
-	int neighbour_cluster; 
+	pair <int,double> cluster_number; //belongs to a cluster (is not centroid)
+	pair <int,double> neighbour_cluster; 
 public:
 	//virtual void func() const=0;
 	//DataVector(string,string,int,int,vector <double> **, double **,int);
@@ -32,10 +33,10 @@ public:
 	void set_centroid();
 	void remove_centroid();
 	int centroid_accessor();
-	void change_cluster_number(int);
-	void change_neighbour_cluster(int);
-	int cluster_number_accessor();
-	int neighbour_cluster_accessor();
+	void change_cluster_number(int,double);
+	void change_neighbour_cluster(int,double);
+	pair <int,double> cluster_number_accessor();
+	pair <int,double> neighbour_cluster_accessor();
 };
 
 
@@ -104,3 +105,5 @@ void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,stri
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 void pam_update(vector <Cluster *> &,string);
 void lsh_assignment(int,int,HashTable *,double,vector <Cluster *> &,string);
+int is_nearest(double ,DataVector * ,int);
+

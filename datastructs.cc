@@ -16,6 +16,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <utility>
 #include "datastructs.h"
 
 
@@ -101,25 +102,27 @@ int DataVector::centroid_accessor()
 	return is_centroid;
 }
 
-void DataVector::change_cluster_number(int new_cluster)
+void DataVector::change_cluster_number(int new_cluster,double distance)
 {
-	cluster_number= new_cluster;
+	cluster_number.first= new_cluster;
+	cluster_number.second=distance;
 	return;
 }
 
-void DataVector::change_neighbour_cluster(int new_cluster)
+void DataVector::change_neighbour_cluster(int new_cluster,double distance)
 {
-	neighbour_cluster= new_cluster;
+	neighbour_cluster.first= new_cluster;
+	neighbour_cluster.second = distance;
 	return;
 }
 
-int DataVector::cluster_number_accessor()
+pair <int,double> DataVector::cluster_number_accessor()
 {
 	return cluster_number;
 
 }
 
-int DataVector::neighbour_cluster_accessor()
+pair <int,double> DataVector::neighbour_cluster_accessor()
 {
 	return neighbour_cluster;
 
@@ -164,8 +167,10 @@ Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double>
 		}
 	}
 
-	cluster_number =-1;
-	neighbour_cluster=-1;
+	cluster_number.first=-1;
+	cluster_number.second = numeric_limits<double>::max();
+	neighbour_cluster.first = -1;
+	neighbour_cluster.second = numeric_limits<double>::max();
 	is_centroid = 0; 
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
@@ -215,8 +220,10 @@ Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr
 				h.push_back(0); 
 		}
 	}
-	cluster_number=-1;
-	neighbour_cluster = -1;
+	cluster_number.first=-1;
+	cluster_number.second = numeric_limits<double>::max();
+	neighbour_cluster.first = -1;
+	neighbour_cluster.second = numeric_limits<double>::max();
 	is_centroid = 0; 
 	//copy(v.begin(),v.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
