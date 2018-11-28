@@ -21,7 +21,7 @@
 #include <utility>
 #include "datastructs.h"
 
-int is_nearest(double distance,DataVector * querypoint,int new_cluster)
+int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calculates the cluster and the neighbour cluster of a datavector
 {
 	int current_cluster = querypoint->cluster_number_accessor().first;
 	double first_minimum_distance = querypoint->cluster_number_accessor().second;
@@ -313,13 +313,14 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
 	cout << counter << " " << mean_silhouette<< endl;
 }
 
-void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vector <Cluster *> & cluster_vector,string metric)
+void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector)
 {
 	map <DataVector *,double> true_neighbour;
 	int old_cluster;
 	vector <DataVector *> centroid_vector;
 	vector <double> silhouette_vector; 
 	double distance;
+	set <DataVector *> unassigned_points;
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 	{
 		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
@@ -351,14 +352,35 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vect
 					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
 					if (distance < radius)
 					{
-						cout << centroid_vector[cluster_num]->name_accessor() << " has " << v->name_accessor() << " distance " << distance << endl;
-						if(v->cluster_number_accessor().first!=cluster_num)
-							cluster_vector[cluster_num]->add_to_cluster(v); //add point to cluster	
-					}	
+						if(v->cluster_number_accessor().first!=-1)
+						{
+							old_cluster = v->cluster_number_accessor().first;
+						}
+						if(is_nearest(distance, v ,cluster_num))  
+						{
+							if (old_cluster!=-1)
+								cluster_vector[old_cluster]->remove_from_cluster(v);
+							cluster_vector[cluster_num]->add_to_cluster(v); //add point to cluster
+
+						}	
+					}
+					
+					
 				}
+
 			}
+		}
+		for(unsigned i=0;i<dataset_vector.size();i++)
+		{
+			if(dataset_vector[i]->cluster_number_accessor().first == -1)
+				unassigned_points.insert(dataset_vector[i]);
+		}
+		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+		{
+			cluster_vector[i]->print_cluster();
 			getchar();
 		}
+		cout << "number of unassigned_points " << unassigned_points.size() << endl;  
 		///////////////////////////////////////////
 		
 		counter++;

@@ -104,6 +104,6 @@ void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 void pam_update(vector <Cluster *> &,string);
-void lsh_assignment(int,int,HashTable *,double,vector <Cluster *> &,string);
+void lsh_assignment(int,int,HashTable *,double,vector <Cluster *> &,string,vector <DataVector *> &);
 int is_nearest(double ,DataVector * ,int);
 
