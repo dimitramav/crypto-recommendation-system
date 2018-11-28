@@ -22,7 +22,6 @@
 
 /* DataVector */
 
-int DataVector::no_of_queryset =0 ;
 int DataVector::no_of_dataset = 0;
 
 DataVector::DataVector(){}
@@ -130,34 +129,22 @@ pair <int,double> DataVector::neighbour_cluster_accessor()
 
 /* Euclidean */
 
-Euclidean::Euclidean(string line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
+Euclidean::Euclidean(vector <double> line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
 {
 	int number;
-	string word;
 	/* 1.initialize name */
 	if (vector_name.compare("item_id") == 0)
 	{
 		no_of_dataset++;
 		name="item_id" + to_string(no_of_dataset);
 	}
-	else 
+	else
 	{
-		no_of_queryset++;
-		name="item_idS" + to_string(no_of_queryset);
+		name = vector_name;
 	}
 	/* 2.initialize vector */
 	
-	// convert line to a stream
-	stringstream in( line );
-	int counter = 0; 
-	while(getline(in,word,',')){
-		if(counter ==0 )
-		{
-			counter++; 
-			continue;  //ignore dimension
-		}
-		v.push_back(atof(word.c_str()));
-	}
+	v = line;
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -181,34 +168,23 @@ Euclidean::~Euclidean(){}
 
 /* Cosine */
 
-Cosine::Cosine(string line,string vector_name,int k, int L,vector <double> ** hr)
+Cosine::Cosine(vector <double> line,string vector_name,int k, int L,vector <double> ** hr)
 {
 	int number;
-	string word;
 	/* 1.initialize name */
 	if (vector_name.compare("item_id") == 0)
 	{
 		no_of_dataset++;
 		name="item_id" + to_string(no_of_dataset);
 	}
-	else 
+	else
 	{
-		no_of_queryset++;
-		name="item_idS" + to_string(no_of_queryset);
+		name = vector_name;
 	}
+	
 	/* 2.initialize vector */
 	
-	// convert line to a stream
-	stringstream in( line );
-	int counter = 0; 
-	while(getline(in,word,',')){
-		if(counter ==0 )
-		{
-			counter++; 
-			continue;  //ignore dimension
-		}
-		v.push_back(atof(word.c_str()));
-	}
+	v=line;
 
 	/* 3. initialize array of h */
 	for (int x=0;x<L; x++){
@@ -504,3 +480,21 @@ int initialize_params(string configuration_path, map <string,double>& parameters
 	return 1;
 }
 
+vector <double> string_to_stream(string line)// convert line to a stream
+{
+	stringstream in( line );
+	int counter = 0;
+	string word; 
+	vector <double> v;
+
+	while(getline(in,word,',')){
+		if(counter ==0 )
+		{
+			counter++; 
+			continue;  //ignore dimension
+		}
+		v.push_back(atof(word.c_str()));
+	}
+	return v;
+
+}

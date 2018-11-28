@@ -27,6 +27,7 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 	double first_minimum_distance = querypoint->cluster_number_accessor().second;
 	int neighbour_cluster = querypoint->neighbour_cluster_accessor().first;
 	double second_minimum_distance = querypoint->neighbour_cluster_accessor().second;
+	int return_value=1;
 	if(distance<first_minimum_distance)
 	{
 		if(neighbour_cluster == new_cluster) //swap neighbour cluster with current cluster
@@ -39,7 +40,8 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 		if(current_cluster != new_cluster)  //avoid neighbour cluster to be equal to current cluster
 			querypoint->change_neighbour_cluster(new_cluster,distance); 
 	}
-	return 0; 
+	return 0;
+	
 }
 
 map <DataVector *,double> trueNN(vector <DataVector *> dataset, DataVector * querypoint,string metric)
@@ -211,7 +213,7 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 }
 
 
-void lloyds_update(vector <Cluster *> & cluster_vector)
+void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,vector <double> **hv,vector <double> **hr,int w,string metric)
 {
 	vector <double > centroid_vector;
 	DataVector * centroid_point;
@@ -224,7 +226,10 @@ void lloyds_update(vector <Cluster *> & cluster_vector)
 		if (cluster_vector[i]->is_external()==0)
 		{
 			cluster_vector[i]->make_external();
-			centroid_point = new DataVector(centroid_vector,i);
+			if(metric.compare("cosine")==0) //cosine metric
+				centroid_point = new Cosine(centroid_vector,"external_centroid",k,L,hr);
+			else
+				centroid_point = new Euclidean(centroid_vector,"external_centroid",k,L,hv,t,w);
 			cluster_vector[i]->create_external_centroid(centroid_point);
 		}
 		else
@@ -302,7 +307,10 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
 		for (auto point_a : cluster_vector[neighbour_cluster]->content_accessor() )
 		{
 
-			distance_b += point_a->neighbour_cluster_accessor().second;
+			distance_b += point_a->neighbour_cluster_accessor().second;		
+			if (point_a->neighbour_cluster_accessor().second>2)
+				cout << point_a->name_accessor() << endl;
+
 		}
 		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
 		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
@@ -310,7 +318,7 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
 	mean_silhouette = mean_silhouette/dataset_vector.size();
-	cout << counter << " " << mean_silhouette<< endl;
+	cout << mean_silhouette<< endl;
 }
 
 int update_cluster_vector(DataVector * v,double distance, vector <Cluster *> &cluster_vector,int cluster_num )
@@ -340,7 +348,7 @@ int update_cluster_vector(DataVector * v,double distance, vector <Cluster *> &cl
 	return 0; 
 }
 
-void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector)
+void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector,double ** ht,vector <double> **hv,vector <double> **hr,int w)
 {
 	map <DataVector *,double> true_neighbour;
 	vector <DataVector *> centroid_vector;
@@ -355,6 +363,7 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
 	}
 	int counter =0;
+	int big_radius;
 	double new_objective_distance = 0.0;
 	double previous_objective_distance = 1.0;
 	do
@@ -385,6 +394,7 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 		do
 		{
 			points_has_changed =0; 
+			big_radius = 0; 
 			for(unsigned int cluster_num=0;cluster_num<centroid_vector.size();cluster_num++) //range search for each centroid
 			{
 				for (int i=0;i<L;i++)
@@ -396,10 +406,10 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 						distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
 						if(distance<radius)
 						{
+							big_radius = 1;
 							if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
 							{	
 								points_has_changed++; 
-								new_objective_distance +=distance * distance;
 							}
 						}
 							
@@ -407,23 +417,22 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 				}
 			}
 			radius*=2;
-		}while(points_has_changed>0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
-		
+		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
-			if(dataset_vector[i]->cluster_number_accessor().first == -1) //for unassigned points
+			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
 			{
 				for(unsigned cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
 				{
 					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
 					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
-					new_objective_distance +=distance * distance;
 				
 				}
 			}
+			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
 		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
-		lloyds_update(cluster_vector);
+		lloyds_update(cluster_vector,k,L,ht, hv,hr,w,metric);
 		//pam_update(cluster_vector,metric);
 		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{

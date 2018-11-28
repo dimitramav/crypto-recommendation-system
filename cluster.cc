@@ -102,12 +102,13 @@ int main(int argc, char * argv[])
 		}
 		if(metric.compare("cosine")==0)
 		{
-			datapoint = new Cosine(line,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hr);
+			vector <double> v = string_to_stream(line);
+			datapoint = new Cosine(v,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hr);
 		}			
 		else
 		{
-			datapoint = new Euclidean(line,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hv,ht,parameters["w"]);
-
+			vector <double> v = string_to_stream(line);
+			datapoint = new Euclidean(v,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hv,ht,parameters["w"]);
 		}
 		dataset_vector.push_back(datapoint);   
 	}
@@ -121,24 +122,24 @@ int main(int argc, char * argv[])
 		for (int i=0;i< parameters["number_of_hashtables"]; i++)
 		{
 				string key = datapoint->key_accessor(i,parameters["number_of_hashfunctions"]);
-					string name = datapoint->name_accessor();
+				string name = datapoint->name_accessor();
 				hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
 	/* 5. PRINT HASHTABLES */ 
-	/* for ( unsigned i = 0; i < hashtables_vector[0].bucket_count(); ++i) {
+	 for ( unsigned i = 0; i < hashtables_vector[0].bucket_count(); ++i) {
     	std::cout << "bucket #" << i << " contains:";
     	for ( auto local_it = hashtables_vector[0].begin(i); local_it!= hashtables_vector[0].end(i); ++local_it )
       		std::cout <<  " ," << local_it->second.size();
     std::cout << std::endl;
-  	}*/
+  	}
 
 
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector);
+	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
 	//lloyds_assignment(dataset_vector,cluster_vector,metric);
-	//silhouette_evaluation(dataset_vector,cluster_vector,metric);
+	silhouette_evaluation(dataset_vector,cluster_vector,metric);
 	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
 
 }

@@ -23,7 +23,6 @@ public:
 	DataVector();
 	DataVector(vector <double>,int);
 	~DataVector();
-	static int no_of_queryset;
 	static int no_of_dataset;
 	void print_vector();
 	string key_accessor(int,int);  
@@ -42,14 +41,14 @@ public:
 
 class Euclidean : public DataVector{
 	public:
-		Euclidean(string,string,int,int,vector <double> **, double **,int);
+		Euclidean(vector <double>,string,int,int,vector <double> **, double **,int);
 		~Euclidean();
 	
 };
 
 class Cosine : public DataVector{
 	public:
-		Cosine(string,string,int,int,std::vector<double> **);
+		Cosine(vector <double>,string,int,int,std::vector<double> **);
 		~Cosine();
 
 };
@@ -93,18 +92,19 @@ int find_dimension(string);
 string find_metric(string);	
 void find_parameter(string,map <string,double> &);
 int initialize_params(string , map <string,double> & );
+vector <double> string_to_stream(string );
 
 
 //algorithms
 map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
 void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
-void lloyds_update(vector <Cluster *> &);
+void lloyds_update(vector <Cluster *> &,double ** ,vector <double> **,vector <double> **,int,string);
 void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 void pam_update(vector <Cluster *> &,string);
-void lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &);
+void lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &,double ** ,vector <double> **,vector <double> ** ,int);
 int is_nearest(double ,DataVector * ,int);
 int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
 
