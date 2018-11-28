@@ -313,14 +313,43 @@ void silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluste
 	cout << counter << " " << mean_silhouette<< endl;
 }
 
-void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector)
+int update_cluster_vector(DataVector * v,double distance, vector <Cluster *> &cluster_vector,int cluster_num )
+{
+
+	int old_cluster=-1;
+	if(v->cluster_number_accessor().first!=-1)
+	{
+		old_cluster = v->cluster_number_accessor().first;
+	}
+	if(is_nearest(distance, v ,cluster_num))  
+	{
+		if (old_cluster!=-1)
+		{
+			cluster_vector[old_cluster]->remove_from_cluster(v);
+		}
+		cluster_vector[cluster_num]->add_to_cluster(v); //add point to cluster
+		if (old_cluster != cluster_num)  //check if datapoint has changed cluster and affects a different cluster
+		{
+			if(old_cluster!=-1)
+				cluster_vector[old_cluster]->set_update(1);
+			cluster_vector[cluster_num]->set_update(1);
+		}	
+		return 1; 
+
+	}	
+	return 0; 
+}
+
+void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector)
 {
 	map <DataVector *,double> true_neighbour;
-	int old_cluster;
 	vector <DataVector *> centroid_vector;
 	vector <double> silhouette_vector; 
 	double distance;
+	int points_has_changed;
 	set <DataVector *> unassigned_points;
+	double centroid_distance;
+	double radius = numeric_limits<double>::max();
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 	{
 		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
@@ -339,50 +368,67 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,double radius,vect
 			cluster_vector[i]->set_update(0);
 		}
 		new_objective_distance  = 0.0;
-		old_cluster = -1; 
 		///////////////////////////////////
-		for(unsigned int cluster_num=0;cluster_num<centroid_vector.size();cluster_num++) //range search for each centroid
+
+		for(unsigned int x=0;x<centroid_vector.size();x++) //find radius
 		{
-			for (int i=0;i<L;i++)
+			for(unsigned int y=0;y<centroid_vector.size();y++)
 			{
-		
-				string key= centroid_vector[cluster_num]->key_accessor(i,k);
-				for (auto v : hashtables_vector[i][key])
+				centroid_distance=vectors_distance(metric,centroid_vector[x]->point_accessor(),centroid_vector[y]->point_accessor());
+				if(radius> centroid_distance && x!=y)
 				{
-					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
-					if (distance < radius)
-					{
-						if(v->cluster_number_accessor().first!=-1)
-						{
-							old_cluster = v->cluster_number_accessor().first;
-						}
-						if(is_nearest(distance, v ,cluster_num))  
-						{
-							if (old_cluster!=-1)
-								cluster_vector[old_cluster]->remove_from_cluster(v);
-							cluster_vector[cluster_num]->add_to_cluster(v); //add point to cluster
-
-						}	
-					}
-					
-					
+					radius = centroid_distance;
 				}
-
 			}
 		}
+		radius/=2;
+		do
+		{
+			points_has_changed =0; 
+			for(unsigned int cluster_num=0;cluster_num<centroid_vector.size();cluster_num++) //range search for each centroid
+			{
+				for (int i=0;i<L;i++)
+				{
+			
+					string key= centroid_vector[cluster_num]->key_accessor(i,k);
+					for (auto v : hashtables_vector[i][key])
+					{
+						distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
+						if(distance<radius)
+						{
+							if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
+							{	
+								points_has_changed++; 
+								new_objective_distance +=distance * distance;
+							}
+						}
+							
+					}
+				}
+			}
+			radius*=2;
+		}while(points_has_changed>0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
+		
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
-			if(dataset_vector[i]->cluster_number_accessor().first == -1)
-				unassigned_points.insert(dataset_vector[i]);
+			if(dataset_vector[i]->cluster_number_accessor().first == -1) //for unassigned points
+			{
+				for(unsigned cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
+				{
+					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
+					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
+					new_objective_distance +=distance * distance;
+				
+				}
+			}
 		}
+		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
+		lloyds_update(cluster_vector);
+		//pam_update(cluster_vector,metric);
 		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{
-			cluster_vector[i]->print_cluster();
-			getchar();
+			centroid_vector[i] = cluster_vector[i]->centroid_accessor();
 		}
-		cout << "number of unassigned_points " << unassigned_points.size() << endl;  
-		///////////////////////////////////////////
-		
 		counter++;
-	}while(counter < 1);
+	}while(new_objective_distance!=	previous_objective_distance);
 }

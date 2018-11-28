@@ -136,7 +136,7 @@ int main(int argc, char * argv[])
 
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,parameters["radius"],cluster_vector,metric,dataset_vector);
+	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector);
 	//lloyds_assignment(dataset_vector,cluster_vector,metric);
 	//silhouette_evaluation(dataset_vector,cluster_vector,metric);
 	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
