@@ -236,10 +236,10 @@ void Cluster::add_to_cluster(DataVector * point)
 
 void Cluster::print_cluster()
 {
-	 for (auto v : cluster_content)
-    {
-        cout << v->name_accessor() << "  ";
-    }
+	for (auto v : cluster_content)
+	{
+		cout << v->name_accessor() << "  ";
+	}
 	cout<< cluster_content.size() << endl;
 	getchar();
 
@@ -277,7 +277,7 @@ vector <double> Cluster::kmeans(int cluster)
 		//cout << mean_vector[i] << "  " ;
 	}
 	//getchar();
- 	return mean_vector; 
+	return mean_vector; 
 }
 
 void Cluster::remove_from_cluster(DataVector * point)
@@ -368,28 +368,16 @@ double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 				return;
 			}
 
-			double find_radius(string line)
-			{
-				istringstream ss(line);
-				string::size_type sz;
-				istream_iterator<std::string> begin(ss), end;    		
-				vector<string> arrayTokens(begin, end);
-				if(arrayTokens[0].compare("Radius:")==0)
-				{
-   		return stod(arrayTokens[1],&sz); //cast string to double
-   	}
-   	return 0.0;
-   }
 
-   int find_dimension(string line)
-   {
-   	stringstream ss(line);
-   	int d =0;
-   	int i;
-   	istringstream input(line);
-   	string word;
-   	while(getline(input,word,','))
-   	{
+			int find_dimension(string line)
+			{
+				stringstream ss(line);
+				int d =0;
+				int i;
+				istringstream input(line);
+				string word;
+				while(getline(input,word,','))
+				{
     	d++;  //number of commas is the dimension of the vector
     }
     return d;
@@ -497,4 +485,39 @@ vector <double> string_to_stream(string line)// convert line to a stream
 	}
 	return v;
 
+}
+
+void initialize_tables(string metric, double ** & ht,vector <double> ** & hr, vector <double> ** & hv, int dimension,int w,int number_of_hashtables ,int number_of_hashfunctions)
+{
+	if(metric.compare("cosine")==0) //cosine metric
+	{
+				/* 2. TABLE FOR r */	
+		hr = make_table_hvector(hr,dimension,number_of_hashtables,number_of_hashfunctions);
+	}
+	else
+	{
+				/* 2. TABLE FOR t */
+		ht = make_table_hnumber(ht,w,number_of_hashtables,number_of_hashfunctions);
+				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
+				/*4. TABLE FOR v */
+		hv = make_table_hvector(hv,dimension,number_of_hashtables,number_of_hashfunctions);
+				//print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
+	}
+	return;
+}
+
+DataVector * create_datapoint(string line,string metric, double **  ht,vector <double> **  hr, vector <double> ** hv, int w,int number_of_hashtables ,int number_of_hashfunctions)
+{
+	DataVector * datapoint;
+	if(metric.compare("cosine")==0)
+	{
+		vector <double> v = string_to_stream(line);
+		datapoint = new Cosine(v,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
+	}			
+	else
+	{
+		vector <double> v = string_to_stream(line);
+		datapoint = new Euclidean(v,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+	}
+	return datapoint;
 }

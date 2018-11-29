@@ -83,36 +83,12 @@ int main(int argc, char * argv[])
 		{
 			dimension=find_dimension(line);
 			/* 5. INITIALIZE TABLES */
-			if(metric.compare("cosine")==0) //cosine metric
-			{
-				/* 2. TABLE FOR r */	
-				hr = make_table_hvector(hr,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
+			initialize_tables(metric,ht,hr,hv,dimension,parameters["w"],parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
 
-				//print_table_hvector(hr,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
-			}
-			else
-			{
-				/* 2. TABLE FOR t */
-				ht = make_table_hnumber(ht,parameters["w"],parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
-				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
-				/*4. TABLE FOR v */
-				hv = make_table_hvector(hv,dimension,parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
-				//print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
-			}
 		}
-		if(metric.compare("cosine")==0)
-		{
-			vector <double> v = string_to_stream(line);
-			datapoint = new Cosine(v,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hr);
-		}			
-		else
-		{
-			vector <double> v = string_to_stream(line);
-			datapoint = new Euclidean(v,"item_id",parameters["number_of_hashfunctions"],parameters["number_of_hashtables"],hv,ht,parameters["w"]);
-		}
+		datapoint = create_datapoint(line,metric,ht,hr,hv,parameters["w"],parameters["number_of_hashtables"],parameters["number_of_hashfunctions"]);
 		dataset_vector.push_back(datapoint);   
 	}
-
 	input.close();
 	/* 4. CREATE HASHTABLES */
 	HashTable hashtables_vector[ int(parameters["number_of_hashtables"])];
@@ -126,7 +102,8 @@ int main(int argc, char * argv[])
 				hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
-	/* 5. PRINT HASHTABLES */ 
+
+	/* 5. PRINT HASHTABLES  */
 	 for ( unsigned i = 0; i < hashtables_vector[0].bucket_count(); ++i) {
     	std::cout << "bucket #" << i << " contains:";
     	for ( auto local_it = hashtables_vector[0].begin(i); local_it!= hashtables_vector[0].end(i); ++local_it )
@@ -134,7 +111,7 @@ int main(int argc, char * argv[])
     std::cout << std::endl;
   	}
 
-
+	
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
 	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);

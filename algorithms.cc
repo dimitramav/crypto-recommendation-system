@@ -21,6 +21,26 @@
 #include <utility>
 #include "datastructs.h"
 
+
+
+double find_lsh_radius(vector <DataVector *> & centroid_vector,string metric)
+{
+	double centroid_distance;
+	double radius = numeric_limits<double>::max();
+	for(unsigned int x=0;x<centroid_vector.size();x++) //find radius
+		{
+			for(unsigned int y=0;y<centroid_vector.size();y++)
+			{
+				centroid_distance=vectors_distance(metric,centroid_vector[x]->point_accessor(),centroid_vector[y]->point_accessor());
+				if(radius> centroid_distance && x!=y)
+				{
+					radius = centroid_distance;
+				}
+			}
+		}
+	return radius/=2;
+	
+}
 int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calculates the cluster and the neighbour cluster of a datavector
 {
 	int current_cluster = querypoint->cluster_number_accessor().first;
@@ -89,11 +109,11 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
 void set_centroid(vector <DataVector *> & dataset_vector,vector <Cluster*> & cluster_vector, int new_centroid)
 {
 	dataset_vector[new_centroid]->set_centroid();
-    Cluster * cluster = new Cluster(dataset_vector[new_centroid]);
-    cluster_vector.push_back(cluster);
-}
-void plus_initialization(vector <DataVector *> & dataset_vector, vector <Cluster *> & cluster_vector, int k,string metric)
-{
+		Cluster * cluster = new Cluster(dataset_vector[new_centroid]);
+		cluster_vector.push_back(cluster);
+	}
+	void plus_initialization(vector <DataVector *> & dataset_vector, vector <Cluster *> & cluster_vector, int k,string metric)
+	{
 	random_device rd;  //Will be used to obtain a seed for the random number engine
     mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     uniform_int_distribution<> dis(0, dataset_vector.size());
@@ -182,7 +202,7 @@ void lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster *>
 			true_neighbour=trueNN(centroid_vector,dataset_vector[i],metric);
 			//cout<< "true : "<<true_neighbour.begin()->first->name_accessor() << " :" << true_neighbour.begin()->second << endl;
 					//cout << true_neighbour.begin()->first->name_accessor()<< "vs "<< cluster_vector[cluster]->centroid_accessor()->name_accessor() << endl	;
-			int new_cluster = dataset_vector[i]->cluster_number_accessor().first;
+				int new_cluster = dataset_vector[i]->cluster_number_accessor().first;
 			if (old_cluster != new_cluster)  //check if datapoint has changed cluster and affects a different cluster
 			{
 				if(old_cluster!=-1)
@@ -262,7 +282,7 @@ void pam_update(vector <Cluster *> & cluster_vector,string metric)
 				distance = 0.0;
 				for (auto point_b : cluster_vector[i]->content_accessor() )	
 				{
-			    	distance+=vectors_distance(metric,point_a->point_accessor(),point_b->point_accessor());
+					distance+=vectors_distance(metric,point_a->point_accessor(),point_b->point_accessor());
 				}
 				if(distance< minimum_distance)
 				{
@@ -356,8 +376,6 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 	double distance;
 	int points_has_changed;
 	set <DataVector *> unassigned_points;
-	double centroid_distance;
-	double radius = numeric_limits<double>::max();
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 	{
 		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
@@ -378,19 +396,7 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 		}
 		new_objective_distance  = 0.0;
 		///////////////////////////////////
-
-		for(unsigned int x=0;x<centroid_vector.size();x++) //find radius
-		{
-			for(unsigned int y=0;y<centroid_vector.size();y++)
-			{
-				centroid_distance=vectors_distance(metric,centroid_vector[x]->point_accessor(),centroid_vector[y]->point_accessor());
-				if(radius> centroid_distance && x!=y)
-				{
-					radius = centroid_distance;
-				}
-			}
-		}
-		radius/=2;
+		double radius = find_lsh_radius(centroid_vector,metric);
 		do
 		{
 			points_has_changed =0; 
@@ -399,7 +405,7 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 			{
 				for (int i=0;i<L;i++)
 				{
-			
+
 					string key= centroid_vector[cluster_num]->key_accessor(i,k);
 					for (auto v : hashtables_vector[i][key])
 					{
@@ -412,25 +418,28 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 								points_has_changed++; 
 							}
 						}
-							
+
 					}
 				}
 			}
 			radius*=2;
 		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
+		int points = 0;
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
+			if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
 			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
 			{
 				for(unsigned cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
 				{
 					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
 					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
-				
+
 				}
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
+		cout << points<< endl;
 		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
 		lloyds_update(cluster_vector,k,L,ht, hv,hr,w,metric);
 		//pam_update(cluster_vector,metric);

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <set>
 #include <utility>
+#include <fstream>
 using namespace std;
 
 
@@ -84,7 +85,6 @@ double ** make_table_hnumber(double ** ,int,int,int);
 vector <double> ** make_table_hvector(vector <double> **, int, int, int);
 void print_table_hnumber(double ** , int ,int);
 void print_table_hvector(vector <double> **, int, int, int);
-double find_radius(string line);
 double	vectors_distance(string,vector<double> ,vector<double>);
 double euclidean_distance(vector<double>,vector<double>);
 double cosine_distance(vector<double>, vector <double>);
@@ -93,6 +93,8 @@ string find_metric(string);
 void find_parameter(string,map <string,double> &);
 int initialize_params(string , map <string,double> & );
 vector <double> string_to_stream(string );
+void initialize_tables(string,double ** & , vector <double> ** & , vector <double> ** & ,int,int,int,int);
+DataVector * create_datapoint(string ,string , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
 
 
 //algorithms
@@ -107,4 +109,5 @@ void pam_update(vector <Cluster *> &,string);
 void lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &,double ** ,vector <double> **,vector <double> ** ,int);
 int is_nearest(double ,DataVector * ,int);
 int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
+double find_lsh_radius(vector <DataVector *> &, string);
 
