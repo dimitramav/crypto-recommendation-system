@@ -5,6 +5,8 @@
 #include <fstream>
 #include <map>
 #include "datastructs.h"
+#include <cmath>
+#include <ctime>
 using namespace std;
 
 int main(int argc, char * argv[])
@@ -14,16 +16,17 @@ int main(int argc, char * argv[])
 	vector <double> ** hr;
 	double ** ht;
 	DataVector * datapoint;
-	int option;
+	int option,int_key;
 	int complete = 0;
 	ifstream input,configuration;
 	string line;
 	int first_line=0;
 	int dimension=0;
-	string metric;
+	string metric,bitstring;
 	map<string,double> parameters;
 	vector <DataVector *> dataset_vector;
 	vector <Cluster *> cluster_vector;
+	srand (time(NULL));
 	static struct option long_options[] = {
 		{"i",required_argument,NULL  ,  'i' },
 		{"c",required_argument,NULL,  'c' },
@@ -103,18 +106,36 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	/* 5. PRINT HASHTABLES  */
+	/* 5. PRINT HASHTABLES  
 	 for ( unsigned i = 0; i < hashtables_vector[0].bucket_count(); ++i) {
     	std::cout << "bucket #" << i << " contains:";
     	for ( auto local_it = hashtables_vector[0].begin(i); local_it!= hashtables_vector[0].end(i); ++local_it )
       		std::cout <<  " ," << local_it->second.size();
     std::cout << std::endl;
-  	}
+  	}*/
+
+  	/* 2. CREATE HYPERCUBE */
+	int hypercube_dimension= int(pow(2.0,parameters["number_of_hashfunctions"]));
+	list <DataVector * >  hypercube[hypercube_dimension];
+
+	/* 3. FILL HYPERCUBE */
+	for (unsigned int x=0;x<dataset_vector.size();x++)
+	{
+		DataVector * datapoint=dataset_vector[x];
+		string key = datapoint->key_accessor(0,parameters["number_of_hashfunctions"]);
+		if(metric.compare("euclidean")==0)
+		{
+			key = string_to_bitstring(key);
+		}	
+		int_key=bitstring_to_int(key,metric);
+		hypercube[int_key].push_back(datapoint);
+	}
 
 	
 	/* 5. RANDOM INITIALIZATION*/ 
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
+	cube_assignment(hypercube,parameters["M"],parameters["probes"],parameters["number_of_hashfunctions"], hypercube_dimension,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
+	//lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
 	//lloyds_assignment(dataset_vector,cluster_vector,metric);
 	silhouette_evaluation(dataset_vector,cluster_vector,metric);
 	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);

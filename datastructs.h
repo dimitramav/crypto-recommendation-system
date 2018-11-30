@@ -95,6 +95,11 @@ int initialize_params(string , map <string,double> & );
 vector <double> string_to_stream(string );
 void initialize_tables(string,double ** & , vector <double> ** & , vector <double> ** & ,int,int,int,int);
 DataVector * create_datapoint(string ,string , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
+int hamming_distance(int, int);
+string string_to_bitstring(string );
+int bitstring_to_int(string ,string );
+int cube_key(string ,string);
+
 
 
 //algorithms
@@ -110,4 +115,6 @@ void lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <Data
 int is_nearest(double ,DataVector * ,int);
 int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
 double find_lsh_radius(vector <DataVector *> &, string);
+void cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,double ** ,vector <double> **,vector <double> **,int);
+
 

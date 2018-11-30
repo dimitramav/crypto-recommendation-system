@@ -17,6 +17,8 @@
 #include <set>
 #include <list>
 #include <utility>
+#include <cstdlib>
+#include <ctime>
 #include "datastructs.h"
 
 
@@ -520,4 +522,61 @@ DataVector * create_datapoint(string line,string metric, double **  ht,vector <d
 		datapoint = new Euclidean(v,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 	}
 	return datapoint;
+}
+
+/*CUBE FUNCTIONS */
+int bitstring_to_int(string key,string metric)
+{
+
+	string::iterator end_pos = remove(key.begin(), key.end(), ' ');
+	key.erase(end_pos, key.end());
+
+   		//cout << "key "<< key<< endl;
+	unsigned int int_key=stoi(key, 0, 2);
+   		//cout << "int_key " << int_key << endl;
+	return int_key;
+}
+
+string string_to_bitstring(string key)
+{
+	int n;
+	vector<int> values;
+	stringstream stream(key);
+	while(stream >> n)
+	{
+		int x = rand()%2;
+		values.push_back(x);
+	}
+	stringstream result;
+	copy(values.begin(), values.end(), std::ostream_iterator<int>(result, " "));
+	string bitstring;
+	bitstring=result.str().c_str();
+	return bitstring;
+}
+
+
+
+int hamming_distance(int x, int y) {
+	int z  = x ^ y;
+	int r = 0;
+	for (; z > 0; z >>= 1) {
+		r += z & 1;
+	}
+	return r;
+}
+
+
+int cube_key(string key,string metric)
+{
+	int int_key;
+	if(metric.compare("cosine")==0)
+	{
+		int_key= bitstring_to_int( key,metric);
+	}
+	else
+	{
+		string bitstring = string_to_bitstring(key);
+		int_key=bitstring_to_int(bitstring,metric);
+	}
+	return int_key;
 }

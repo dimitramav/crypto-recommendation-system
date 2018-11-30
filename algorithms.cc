@@ -424,6 +424,111 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 			}
 			radius*=2;
 		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
+		// int points = 0;
+		for(unsigned i=0;i<dataset_vector.size();i++)
+		{
+			// if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
+			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
+			{
+				for(unsigned cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
+				{
+					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
+					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
+
+				}
+			}
+			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
+		}
+		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
+		lloyds_update(cluster_vector,k,L,ht, hv,hr,w,metric);
+		//pam_update(cluster_vector,metric);
+		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+		{
+			centroid_vector[i] = cluster_vector[i]->centroid_accessor();
+		}
+		counter++;
+	}while(new_objective_distance!=	previous_objective_distance);
+}
+
+
+
+void cube_assignment(list <DataVector *> * hypercube,int M,int probes,int k, int vertices,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector,double ** ht,vector <double> **hv,vector <double> **hr,int w)
+{
+	map <DataVector *,double> true_neighbour;
+	vector <DataVector *> centroid_vector;
+	vector <double> silhouette_vector; 
+	double distance;
+	int int_key;
+	int cluster_probes;
+	int points_has_changed;
+	set <DataVector *> unassigned_points;
+	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+	{
+		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
+	}
+	int counter =0;
+	int big_radius;
+	double new_objective_distance = 0.0;
+	double previous_objective_distance = 1.0;
+	int points_checked; 
+	do
+	{	
+		if (counter !=0)
+		{
+			previous_objective_distance = new_objective_distance;
+		}
+		for (unsigned int i = 0;i<cluster_vector.size();i++)
+		{
+			cluster_vector[i]->set_update(0);
+		}
+		new_objective_distance  = 0.0;
+		///////////////////////////////////
+		double radius = find_lsh_radius(centroid_vector,metric);
+		int term = 0;
+		do
+		{
+			points_has_changed =0; 
+			big_radius = 0;
+			cluster_probes= probes; 
+			for(unsigned int cluster_num=0;cluster_num<centroid_vector.size();cluster_num++) //range search for each centroid
+			{
+				for(int i=0; i<vertices; ++i) 
+				{
+					string key= centroid_vector[cluster_num]->key_accessor(0,k);
+					int int_key = cube_key(key,metric);
+					if(hamming_distance(i,int_key)<=cluster_probes)
+					{
+						cluster_probes--;
+						points_checked=0;
+						for (auto v : hypercube[i])
+						{
+
+							if(points_checked<M)
+							{
+								distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
+								if(distance<radius)
+								{
+
+									big_radius = 1;
+									if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
+									{	
+										points_has_changed++; 
+									}
+								}
+
+								points_checked++;
+							}
+							else
+								break;
+						}
+					}
+					else
+						continue;
+				}
+			}
+		
+			radius*=2;
+		}while(points_has_changed>0 || big_radius==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
 		int points = 0;
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
@@ -439,9 +544,9 @@ void lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *>
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
-		cout << points<< endl;
+		cout << points << endl;
 		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
-		lloyds_update(cluster_vector,k,L,ht, hv,hr,w,metric);
+		lloyds_update(cluster_vector,k,1,ht, hv,hr,w,metric);
 		//pam_update(cluster_vector,metric);
 		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{
