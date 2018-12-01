@@ -11,20 +11,25 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 	string input_path,configuration_path,a,d,output_path;
-	vector <double> ** hv;
 	vector <double> ** hr;
+	vector <double> ** hv;
 	double ** ht;
+	ofstream output;
 	DataVector * datapoint;
 	int int_key;
 	int complete = 0;
 	ifstream input,configuration;
-	string line;
-	int first_line=0;
 	int dimension=0;
-	string metric,bitstring;
+	string metric,bitstring,line;
 	map<string,double> parameters;
 	vector <DataVector *> dataset_vector;
 	vector <Cluster *> cluster_vector;
+	vector <DataVector *> centroid_vector;
+	vector <double> silhouette_vector; 
+	int counter =0;
+	double new_objective_distance = 0.0;
+	double previous_objective_distance = 1.0;
+
 	srand (time(NULL));
 
 
@@ -94,14 +99,48 @@ int main(int argc, char * argv[])
 		int_key=bitstring_to_int(key,metric);
 		hypercube[int_key].push_back(datapoint);
 	}
-
+	output.open(output_path);
 	
 	/* 5. RANDOM INITIALIZATION*/ 
+	int start_clock=clock();
 	random_initialization(dataset_vector,cluster_vector,parameters["k"]);
-	cube_assignment(hypercube,parameters["M"],parameters["probes"],parameters["number_of_hashfunctions"], hypercube_dimension,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
+	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
+	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+	{
+		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
+	}
+
+	do
+	{	
+		if (counter !=0)
+		{
+			previous_objective_distance = new_objective_distance;
+		}
+		for (unsigned int i = 0;i<cluster_vector.size();i++)
+		{
+			cluster_vector[i]->set_update(0);
+		}
+		//new_objective_distance  = cube_assignment(hypercube,parameters["M"],parameters["probes"],parameters["number_of_hashfunctions"], hypercube_dimension,cluster_vector,metric,dataset_vector,centroid_vector);
+		//new_objective_distance = lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,centroid_vector);
+		new_objective_distance = lloyds_assignment(dataset_vector,cluster_vector,metric,centroid_vector);
+
+		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
+		lloyds_update(cluster_vector,parameters["number_of_hashfunctions"],1,ht, hv,hr,parameters["w"],metric);
+		//pam_update(cluster_vector,metric);
+		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+		{
+			centroid_vector[i] = cluster_vector[i]->centroid_accessor();
+		}
+		counter++;
+	}while(new_objective_distance!=	previous_objective_distance);
+	int stop_clock = clock();
+	double total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
+	cout << total_time << endl;
+	//cube_assignment(hypercube,parameters["M"],parameters["probes"],parameters["number_of_hashfunctions"], hypercube_dimension,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
 	//lsh_assignment(parameters["number_of_hashtables"],parameters["number_of_hashfunctions"],hashtables_vector,cluster_vector,metric,dataset_vector,ht,hv,hr,parameters["w"]);
 	//lloyds_assignment(dataset_vector,cluster_vector,metric);
-	silhouette_evaluation(dataset_vector,cluster_vector,metric);
-	//plus_initialization(dataset_vector,cluster_vector,parameters["k"],metric);
+	silhouette_vector = silhouette_evaluation(dataset_vector,cluster_vector,metric);
+	print_output(output,cluster_vector,complete,silhouette_vector,metric,total_time,dataset_vector.size());
+	output.close();
 
 }

@@ -19,13 +19,10 @@ protected:
 	pair <int,double> cluster_number; //belongs to a cluster (is not centroid)
 	pair <int,double> neighbour_cluster; 
 public:
-	//virtual void func() const=0;
-	//DataVector(string,string,int,int,vector <double> **, double **,int);
 	DataVector();
-	DataVector(vector <double>,int);
 	~DataVector();
 	static int no_of_dataset;
-	void print_vector();
+	void print_vector(ofstream &);
 	string key_accessor(int,int);  
 	string name_accessor();
 	vector <double> point_accessor();
@@ -89,7 +86,6 @@ double	vectors_distance(string,vector<double> ,vector<double>);
 double euclidean_distance(vector<double>,vector<double>);
 double cosine_distance(vector<double>, vector <double>);
 int find_dimension(string);
-string find_metric(string);	
 void find_parameter(string,map <string,double> &);
 int initialize_params(string , map <string,double> & );
 vector <double> string_to_stream(string );
@@ -100,22 +96,22 @@ string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
 int cube_key(string ,string);
 int read_arguements(int, char ** , string &,string &,int &,string &,string &);
+void print_output(ofstream &,vector <Cluster * > &,int,vector <double> &,string,double,int);
 
 
 
 //algorithms
-map <DataVector *, double> trueNN(vector <DataVector *>, DataVector *,string);
 void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
-void lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string);
-void lloyds_update(vector <Cluster *> &,double ** ,vector <double> **,vector <double> **,int,string);
-void silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
+double lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string,vector <DataVector *> centroid_vector);
+void lloyds_update(vector <Cluster *> &,int,int,double ** ,vector <double> **,vector <double> **,int,string);
+vector <double> silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
 void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
 void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
 void pam_update(vector <Cluster *> &,string);
-void lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &,double ** ,vector <double> **,vector <double> ** ,int);
+double lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &, vector <DataVector *> &);
 int is_nearest(double ,DataVector * ,int);
 int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
 double find_lsh_radius(vector <DataVector *> &, string);
-void cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,double ** ,vector <double> **,vector <double> **,int);
+double cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,	vector <DataVector *> &);
 
 
