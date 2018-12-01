@@ -99,6 +99,7 @@ int hamming_distance(int, int);
 string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
 int cube_key(string ,string);
+int read_arguements(int, char ** , string &,string &,int &,string &,string &);
 
 
 
