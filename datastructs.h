@@ -63,7 +63,7 @@ class Cluster{
 		DataVector * centroid_accessor();
 		list <DataVector *> content_accessor();
 		void add_to_cluster(DataVector *);
-		void print_cluster();
+		void print_cluster(ofstream &);
 		void create_external_centroid(DataVector *);
 		void change_external_centroid(vector <double>);
 		vector <double> kmeans(int);

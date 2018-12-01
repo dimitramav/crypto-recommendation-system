@@ -227,14 +227,13 @@ void Cluster::add_to_cluster(DataVector * point)
 	cluster_content.push_back(point);
 }
 
-void Cluster::print_cluster()
+void Cluster::print_cluster(ofstream & output)
 {
 	for (auto v : cluster_content)
 	{
-		cout << v->name_accessor() << "  ";
+		output << v->name_accessor() << "  ";
 	}
-	cout<< cluster_content.size() << endl;
-	getchar();
+	return;
 
 }
 

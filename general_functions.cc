@@ -330,6 +330,13 @@ void print_output(ofstream & output,vector <Cluster * > & cluster_vector ,int co
 	for (int i=0;i<cluster_vector.size();i++)
 	{
 		output << "CLUSTER-" << i+1 << " " ;
+		if (complete==1)
+		{
+			output << "{";
+			cluster_vector[i]->print_cluster(output);
+			output << "}";
+		}
+		output << endl;
 		output << "{ size : " << cluster_vector[i]->content_accessor().size() << " ,";
 		output << " centroid : ";
 		cluster_vector[i]->centroid_accessor()->print_vector(output);
