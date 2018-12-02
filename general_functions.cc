@@ -449,22 +449,13 @@ double call_assignment(int assignment, list <DataVector *> * hypercube,int M,int
 	return new_objective_distance;
 }	
 
-void delete_data(vector <Cluster *> cluster_vector, vector <DataVector *> &dataset_vector,string metric, vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
+void delete_data( vector <DataVector *> &dataset_vector,string metric, vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
 {
 	vector <DataVector *> ::iterator dataset_iterator;
-	vector <Cluster *> ::iterator cluster_iterator;
 	//delete dataset
    	for(dataset_iterator = dataset_vector.begin(); dataset_iterator != dataset_vector.end(); dataset_iterator++) 
    	{   
    		delete *(dataset_iterator);
-   	}
-   	for(cluster_iterator = cluster_vector.begin(); cluster_iterator != cluster_vector.end(); cluster_iterator++)    
-   	{
-   		if((*(cluster_iterator))->is_external()==1)
-   		{
-   			delete (*(cluster_iterator))->centroid_accessor();
-   		}
-   		delete *(cluster_iterator);
    	}
  	if(metric.compare("cosine")==0) //cosine metric
  	{
@@ -486,5 +477,29 @@ void delete_data(vector <Cluster *> cluster_vector, vector <DataVector *> &datas
  		delete [] ht;
  		delete [] hv;
 	}
+	return;
 
+}
+
+void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dataset_vector)
+{
+	vector <Cluster *> ::iterator cluster_iterator;
+	//delete clusters
+	for(cluster_iterator = cluster_vector.begin(); cluster_iterator != cluster_vector.end(); cluster_iterator++)    
+   	{
+   		if((*(cluster_iterator))->is_external()==1)
+   		{
+   			delete (*(cluster_iterator))->centroid_accessor();
+   		}
+   		delete *(cluster_iterator);
+   	}
+   	cluster_vector.clear();
+   	//redefine datavectors
+   	for (int i=0;i<dataset_vector.size();i++)
+   	{
+   		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
+		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
+   	}
+
+   	return;
 }
