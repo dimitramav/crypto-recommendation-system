@@ -96,26 +96,13 @@ string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
 int cube_key(string ,string);
 int read_arguements(int, char ** , string &,string &,int &,string &,string &, int &, int &,int &);
-void print_output(int,ofstream &,vector <Cluster * > &,int,vector <double> &,string,double,int);
+void print_output(int,int,int,ofstream &,vector <Cluster * > &,int,vector <double> &,string,double,int);
 void call_initialization(int , vector <DataVector *> &, vector <Cluster *> &,int ,string );
 void call_update(int ,int , vector <Cluster *> & ,int ,int ,double ** ,vector <double> ** , vector <double> ** ,int ,string);
 double call_assignment(int , list <DataVector *> * ,int ,int ,int , int, vector <Cluster *> ,string ,vector <DataVector *>,vector <DataVector*>,HashTable *,int);
 void delete_data(vector <DataVector *> &,string , vector <double> ** ,double ** ,vector <double> ** ,int);
 void change_data(vector <Cluster *> &,vector <DataVector *> &);
+void reset_distances(vector <DataVector *> & dataset_vector);
 
-
-//algorithms
-void random_initialization( vector <DataVector *> &,vector <Cluster *> &,int);
-double lloyds_assignment(vector <DataVector *> &,vector <Cluster *> &,string,vector <DataVector *> centroid_vector);
-void lloyds_update(vector <Cluster *> &,int,int,double ** ,vector <double> **,vector <double> **,int,string);
-vector <double> silhouette_evaluation(vector <DataVector *> &,vector <Cluster *> &,string);
-void plus_initialization(vector <DataVector *> &, vector <Cluster *> &, int,string);
-void set_centroid(vector <DataVector *> & ,vector <Cluster*> & , int);
-void pam_update(vector <Cluster *> &,string);
-double lsh_assignment(int,int,HashTable *,vector <Cluster *> &,string,vector <DataVector *> &, vector <DataVector *> &);
-int is_nearest(double ,DataVector * ,int);
-int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
-double find_lsh_radius(vector <DataVector *> &, string);
-double cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,	vector <DataVector *> &);
 
 

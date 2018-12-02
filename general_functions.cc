@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <getopt.h>
 #include "datastructs.h"
+#include "algorithms.h"
 /*GENERAL FUNCTIONS*/
 
 
@@ -356,9 +357,10 @@ int read_arguements(int argc, char ** argv, string & input_path, string & config
 	return 0;
 }
 
-void print_output(int update, ofstream & output,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
+void print_output(int initialization,int assignment,int update, ofstream & output,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
 {
 	double mean_silhouette=0.0;
+	output << "I" << initialization <<"A" << assignment <<"U" <<update <<endl;
 	output << "Metric : " << metric << endl;
 	for (int i=0;i<cluster_vector.size();i++)
 	{
@@ -389,7 +391,7 @@ void print_output(int update, ofstream & output,vector <Cluster * > & cluster_ve
 	output << endl;
 	mean_silhouette/=total_dataset;
 	output << mean_silhouette << endl;
-
+	output<< endl;
 	return;
 }
 
@@ -502,4 +504,15 @@ void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dat
    	}
 
    	return;
+}
+
+void reset_distances(vector <DataVector *> & dataset_vector)
+{
+	for (int i=0;i<dataset_vector.size();i++)
+   	{
+   		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
+		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
+   	}
+   	return;
+
 }

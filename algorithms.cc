@@ -20,6 +20,7 @@
 #include <ctime>
 #include <utility>
 #include "datastructs.h"
+#include "algorithms.h"
 
 
 
@@ -77,7 +78,7 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
 	}
 	for(it = random_k.begin(); it != random_k.end(); it++)
 	{
-        dataset_vector[*it]->set_centroid();   //set centroid DELETE IT 
+        dataset_vector[*it]->set_centroid(); 
         Cluster * cluster = new Cluster(dataset_vector[*it]);  //initialize new cluster with the random centroid
         cluster_vector.push_back(cluster);
     }
@@ -159,12 +160,6 @@ double lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster 
 		}
 		new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second * dataset_vector[i]->cluster_number_accessor().second;
 	}
-		//getchar();
-		/*for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
-		{
-			cluster_vector[i]->print_cluster();
-			getchar();
-		}*/
 	return new_objective_distance;
 		
 }
@@ -237,6 +232,7 @@ void pam_update(vector <Cluster *> & cluster_vector,string metric)
 vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector,string metric)
 {
 	int min_cluster;
+	double a =0.0;
 	int neighbour_cluster;
 	double final_silhouette; 
 	double distance_a;
@@ -258,7 +254,7 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
 		neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor().first;
 		if (neighbour_cluster == min_cluster )
-			counter ++;
+			counter++;
 		if (neighbour_cluster == -1)
 		{
 			neighbour_cluster = min_cluster;
@@ -274,7 +270,6 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
 		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
 		silhouette_vector[min_cluster]+= final_silhouette;
-
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
 	return silhouette_vector;
