@@ -274,9 +274,9 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
 		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
 		silhouette_vector[min_cluster]+= final_silhouette;
+
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
 	}
-	
 	return silhouette_vector;
 }
 
@@ -342,10 +342,10 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 			}
 			radius*=2;
 		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
-		// int points = 0;
+		 int points = 0;
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
-			// if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
+			if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
 			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
 			{
 				for(unsigned int cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
@@ -357,6 +357,7 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
+		cout << "UNASSIGNED " << points; 
 		return new_objective_distance;
 	}
 

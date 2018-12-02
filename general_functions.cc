@@ -157,11 +157,17 @@ int initialize_params(string configuration_path, map <string,double>& parameters
 	configuration.open(configuration_path.c_str());  //convert string to const char *
 	if (!configuration.is_open())
 	{
+		cout << "Fail to open configuration file" << endl;
 		return 0;
 	}
 	while (getline(configuration,line))
 	{
 		find_parameter(line,parameters);
+	}
+	if(parameters["number_of_hashfunctions"]>18)
+	{
+		cout << "Cannot allocate memory for the array" << endl;
+		return 0;
 	}
 	return 1;
 }
@@ -279,7 +285,7 @@ int cube_key(string key,string metric)
 
 
 
-int read_arguements(int argc, char ** argv, string & input_path, string & configuration_path, int & complete, string & metric,string & output_path)
+int read_arguements(int argc, char ** argv, string & input_path, string & configuration_path, int & complete, string & metric,string & output_path, int & initialization, int & assignment,int & update )
 {
 	int option;
 	static struct option long_options[] = {
@@ -288,27 +294,39 @@ int read_arguements(int argc, char ** argv, string & input_path, string & config
 		{"d",required_argument, NULL,  'd' },
 		{"complete",optional_argument,NULL, 'a'},
 		{"o",required_argument,NULL  ,  'o' },
+		{"initialization",required_argument,NULL,'n'},
+		{"assignment",required_argument,NULL,'s'},
+		{"update",required_argument,NULL,'u'},
 		{NULL,0,NULL, 0}
 	};
-	while ((option = getopt_long_only (argc, argv, "i:c:a:o:d:",long_options,NULL)) != -1)
+	while ((option = getopt_long_only (argc, argv, "i:c:a:o:d:n:s:u:",long_options,NULL)) != -1)
 	{
 		switch (option)
 		{
 			case 'i':
-			input_path = optarg;
-			break;
+				input_path = optarg;
+				break;
 			case 'c':
-			configuration_path = optarg;
-			break;
+				configuration_path = optarg;
+				break;
 			case 'a':
-			complete = 1;
-			break;
+				complete = 1;
+				break;
 			case 'd':
-			metric = optarg;
-			break;
+				metric = optarg;
+				break;
 			case 'o':
-			output_path = optarg;
-			break;
+				output_path = optarg;
+				break;
+			case 'n':
+				initialization = atoi(optarg);
+				break;
+			case 's':
+				assignment  = atoi(optarg);
+				break;
+			case 'u':
+				update = atoi(optarg);
+				break;
 			default: 
 			cout << "Given parameters are wrong. Try again." << endl;
 			return -1;
@@ -320,10 +338,25 @@ int read_arguements(int argc, char ** argv, string & input_path, string & config
 		cout << "File parameters are mandatory. Try again." << endl;
 		return -1;
 	}
+	if(initialization>2)
+	{	
+		cout << "There are only two initialization methods" << endl;
+		return -1;
+	}
+	if(assignment>3)
+	{
+		cout << "There are only three assignment methods" << endl;
+		return -1;
+	}
+	if(update>2)
+	{
+		cout << "There are only two update methods" << endl;
+		return -1;
+	}
 	return 0;
 }
 
-void print_output(ofstream & output,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
+void print_output(int update, ofstream & output,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
 {
 	double mean_silhouette=0.0;
 	output << "Metric : " << metric << endl;
@@ -339,6 +372,8 @@ void print_output(ofstream & output,vector <Cluster * > & cluster_vector ,int co
 		output << endl;
 		output << "{ size : " << cluster_vector[i]->content_accessor().size() << " ,";
 		output << " centroid : ";
+		if(update == 2)
+			output << cluster_vector[i]->centroid_accessor()->name_accessor();
 		cluster_vector[i]->centroid_accessor()->print_vector(output);
 		output << " }"<< endl;
 		output << endl;
@@ -357,3 +392,59 @@ void print_output(ofstream & output,vector <Cluster * > & cluster_vector ,int co
 
 	return;
 }
+
+
+void call_initialization(int initialization, vector <DataVector *> & dataset_vector, vector <Cluster *> & cluster_vector,int k,string metric)
+{
+	if(initialization == 1)
+	{
+		cout << "random_initialization" << endl;
+		random_initialization(dataset_vector,cluster_vector,k);
+	}	
+	else
+	{
+		cout << "plus_initialization" << endl;
+		plus_initialization(dataset_vector,cluster_vector,k,metric);
+	}
+	return;
+}
+
+void call_update(int update,int assignment, vector <Cluster *> & cluster_vector,int k,int L,double ** ht,vector <double> ** hv, vector <double> ** hr,int w,string metric)
+{
+	if(update == 1)
+	{
+		cout << "lloyds_update" << endl;
+		if (assignment ==3)
+			lloyds_update(cluster_vector,k,1,ht, hv,hr,w,metric); //hypercube
+		else
+			lloyds_update(cluster_vector,k,L,ht, hv,hr,w,metric);
+	}	
+	else if (update == 2)
+	{
+		cout << "pam_update" << endl;
+		pam_update(cluster_vector,metric);
+	}
+	return;
+}
+
+double call_assignment(int assignment, list <DataVector *> * hypercube,int M,int probes,int k, int hypercube_dimension, vector <Cluster *> cluster_vector,string metric,vector <DataVector *> dataset_vector,vector <DataVector*> centroid_vector,HashTable * hashtables_vector,int L)
+{
+	double new_objective_distance;
+	if (assignment==1)
+	{
+		cout << "lloyds_assignment" << endl;
+		new_objective_distance = lloyds_assignment(dataset_vector,cluster_vector,metric,centroid_vector);
+	}
+	else if (assignment ==2)
+	{
+		cout << "lsh_assignment" << endl;
+		new_objective_distance = lsh_assignment(L,k,hashtables_vector,cluster_vector,metric,dataset_vector,centroid_vector);
+
+	}
+	else
+	{
+		cout << "cube_assignment" << endl;
+		new_objective_distance  = cube_assignment(hypercube,M,probes,k, hypercube_dimension,cluster_vector,metric,dataset_vector,centroid_vector);
+	}
+	return new_objective_distance;
+}	
