@@ -448,3 +448,43 @@ double call_assignment(int assignment, list <DataVector *> * hypercube,int M,int
 	}
 	return new_objective_distance;
 }	
+
+void delete_data(vector <Cluster *> cluster_vector, vector <DataVector *> &dataset_vector,string metric, vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
+{
+	vector <DataVector *> ::iterator dataset_iterator;
+	vector <Cluster *> ::iterator cluster_iterator;
+	//delete dataset
+   	for(dataset_iterator = dataset_vector.begin(); dataset_iterator != dataset_vector.end(); dataset_iterator++) 
+   	{   
+   		delete *(dataset_iterator);
+   	}
+   	for(cluster_iterator = cluster_vector.begin(); cluster_iterator != cluster_vector.end(); cluster_iterator++)    
+   	{
+   		if((*(cluster_iterator))->is_external()==1)
+   		{
+   			delete (*(cluster_iterator))->centroid_accessor();
+   		}
+   		delete *(cluster_iterator);
+   	}
+ 	if(metric.compare("cosine")==0) //cosine metric
+ 	{
+ 		//delete r table
+ 		for(int i = 0;i<L;i++)
+ 		{
+ 			delete [] hr[i];
+ 		}
+
+ 	}
+ 	else
+ 	{
+ 		//delete t & v table
+ 		for(int i = 0;i<L;i++)
+ 		{
+ 			delete [] ht[i];
+ 			delete [] hv[i];
+ 		}
+ 		delete [] ht;
+ 		delete [] hv;
+	}
+
+}

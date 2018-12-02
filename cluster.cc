@@ -100,15 +100,19 @@ int main(int argc, char * argv[])
 		hypercube[int_key].push_back(datapoint);
 	}
 	output.open(output_path);
-	
+
+	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
+	{
+		centroid_vector.push_back(0);
+	}
 	/* 5. RANDOM INITIALIZATION*/ 
 	int start_clock=clock();
 	call_initialization(initialization,dataset_vector,cluster_vector,parameters["k"],metric);
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 	{
-		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
+		centroid_vector[i]=cluster_vector[i]->centroid_accessor();
+		cout << "Fef" << endl;
 	}
-
 	do
 	{	
 		if (counter !=0)
@@ -132,6 +136,7 @@ int main(int argc, char * argv[])
 	double total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
 	silhouette_vector = silhouette_evaluation(dataset_vector,cluster_vector,metric);
 	print_output(update,output,cluster_vector,complete,silhouette_vector,metric,total_time,dataset_vector.size());
+	delete_data(cluster_vector, dataset_vector, metric, hr,ht, hv,parameters["number_of_hashtables"]);
 	output.close();
 
 }

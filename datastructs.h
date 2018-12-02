@@ -100,6 +100,7 @@ void print_output(int,ofstream &,vector <Cluster * > &,int,vector <double> &,str
 void call_initialization(int , vector <DataVector *> &, vector <Cluster *> &,int ,string );
 void call_update(int ,int , vector <Cluster *> & ,int ,int ,double ** ,vector <double> ** , vector <double> ** ,int ,string);
 double call_assignment(int , list <DataVector *> * ,int ,int ,int , int, vector <Cluster *> ,string ,vector <DataVector *>,vector <DataVector*>,HashTable *,int);
+void delete_data(vector <Cluster *> ,vector <DataVector *> &,string , vector <double> ** ,double ** ,vector <double> ** ,int);
 
 
 
