@@ -48,11 +48,21 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 	double first_minimum_distance = querypoint->cluster_number_accessor().second;
 	int neighbour_cluster = querypoint->neighbour_cluster_accessor().first;
 	double second_minimum_distance = querypoint->neighbour_cluster_accessor().second;
+	double previous_first=0.0;
+	if(querypoint->is_assigned()==0)
+	{
+		previous_first=first_minimum_distance;
+		first_minimum_distance = numeric_limits<double>::max();
+	}
 	if(distance<first_minimum_distance)
 	{
-		if(neighbour_cluster == new_cluster) //swap neighbour cluster with current cluster
+		if(neighbour_cluster == new_cluster && querypoint->is_assigned()==1) //swap neighbour cluster with current cluster
+			querypoint->change_neighbour_cluster(current_cluster,previous_first); 
+		else if (neighbour_cluster == new_cluster && querypoint->is_assigned()==0)
 			querypoint->change_neighbour_cluster(current_cluster,first_minimum_distance); 
 		querypoint->change_cluster_number(new_cluster,distance);
+		querypoint->change_assigned(1);
+		//cout << querypoint->cluster_number_accessor().second << " " << querypoint->neighbour_cluster_accessor().second<< endl; 
 		return 1;
 	}
 	else if(distance>first_minimum_distance && distance < second_minimum_distance)
@@ -64,7 +74,20 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 	
 }
 
+int is_second_nearest(double distance,DataVector * querypoint,int new_cluster)
+{
 
+	int current_cluster = querypoint->cluster_number_accessor().first;
+	double first_minimum_distance = querypoint->cluster_number_accessor().second;
+	double second_minimum_distance = querypoint->neighbour_cluster_accessor().second;
+	if(distance>first_minimum_distance && distance < second_minimum_distance)
+	{
+		if(current_cluster != new_cluster)  //avoid neighbour cluster to be equal to current cluster
+			querypoint->change_neighbour_cluster(new_cluster,distance); 
+	}
+	return 1;
+
+}
 
 void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector, int k)
 {
@@ -78,7 +101,7 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
 	}
 	for(it = random_k.begin(); it != random_k.end(); it++)
 	{
-        dataset_vector[*it]->set_centroid(); 
+		dataset_vector[*it]->set_centroid(); 
         Cluster * cluster = new Cluster(dataset_vector[*it]);  //initialize new cluster with the random centroid
         cluster_vector.push_back(cluster);
     }
@@ -161,13 +184,13 @@ double lloyds_assignment(vector <DataVector *> & dataset_vector,vector <Cluster 
 		new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second * dataset_vector[i]->cluster_number_accessor().second;
 	}
 	return new_objective_distance;
-		
+
 }
 
 
 void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,vector <double> **hv,vector <double> **hr,int w,string metric)
 {
-	vector <double > centroid_vector;
+	vector <double> centroid_vector;
 	DataVector * centroid_point;
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //vector with centroids for compatibility reasons
 	{
@@ -175,6 +198,12 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 		//cluster_vector[i]->centroid_accessor()->print_vector();
 		//getchar();
 		centroid_vector = cluster_vector[i]->kmeans(i);
+		if (centroid_vector[0]==0.0)
+		{
+			continue; 
+		}
+		// for(i=0;i<centroid_vector.size();i++)
+		// 	cout <<centroid_vector[i] << " ";
 		if (cluster_vector[i]->is_external()==0)
 		{
 			cluster_vector[i]->make_external();
@@ -254,7 +283,10 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
 		neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor().first;
 		if (neighbour_cluster == min_cluster )
+		{
 			counter++;
+		}
+
 		if (neighbour_cluster == -1)
 		{
 			neighbour_cluster = min_cluster;
@@ -263,11 +295,9 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		{
 
 			distance_b += point_a->neighbour_cluster_accessor().second;		
-			if (point_a->neighbour_cluster_accessor().second>2)
-				cout << point_a->name_accessor() << endl;
-
 		}
 		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
+		cout << distance_a << " " << distance_b<< endl;
 		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
 		silhouette_vector[min_cluster]+= final_silhouette;
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
@@ -304,7 +334,7 @@ int update_cluster_vector(DataVector * v,double distance, vector <Cluster *> &cl
 
 double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector,vector <DataVector *> & centroid_vector)
 {
-	double distance;
+	double distance=1000.0;
 	int points_has_changed;
 	set <DataVector *> unassigned_points;
 	int big_radius;
@@ -322,26 +352,35 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 					string key= centroid_vector[cluster_num]->key_accessor(i,k);
 					for (auto v : hashtables_vector[i][key])
 					{
-						distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
 						if(distance<radius)
 						{
 							big_radius = 1;
-							if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
-							{	
-								points_has_changed++; 
+
+						}
+						if(v->is_assigned()==0)
+						{
+							distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
+							if(distance<radius)
+							{
+								if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
+								{	
+									points_has_changed++; 
+								}
 							}
 						}
 
 					}
 				}
 			}
+			cout << radius << endl;
 			radius*=2;
 		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
-		 int points = 0;
+		int points = 0;
+		
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
 			if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
-			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
+			if(dataset_vector[i]->is_assigned()==0) //for unassigned points
 			{
 				for(unsigned int cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
 				{
@@ -349,6 +388,20 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
 
 				}
+			}
+			else
+			{
+				for(unsigned int cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
+				{
+					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
+					is_second_nearest(distance,dataset_vector[i],cluster_num);
+
+				}
+				
+			}
+			if(dataset_vector[i]->neighbour_cluster_accessor().second>2)
+			{
+				dataset_vector[i]->change_neighbour_cluster(dataset_vector[i]->cluster_number_accessor().first,dataset_vector[i]->cluster_number_accessor().second);
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
@@ -360,7 +413,7 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 
 	double cube_assignment(list <DataVector *> * hypercube,int M,int probes,int k, int vertices,vector <Cluster *> & cluster_vector,string metric,vector <DataVector *> & dataset_vector,	vector <DataVector *> & centroid_vector)
 	{
-		double distance;
+		double distance=1000.0;
 		int int_key;
 		int cluster_probes;
 		int points_has_changed;
@@ -389,14 +442,20 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 
 							if(points_checked<M)
 							{
-								distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
 								if(distance<radius)
 								{
-
 									big_radius = 1;
-									if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
-									{	
-										points_has_changed++; 
+
+								}
+								if(v->is_assigned()==0)
+								{
+									distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),v->point_accessor());
+									if(distance<radius)
+									{
+										if(update_cluster_vector(v,distance,cluster_vector,cluster_num ))
+										{	
+											points_has_changed++; 
+										}
 									}
 								}
 
@@ -417,14 +476,29 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 		for(unsigned i=0;i<dataset_vector.size();i++)
 		{
 			if(dataset_vector[i]->cluster_number_accessor().first == -1){points++;}
-			if(dataset_vector[i]->cluster_number_accessor().first == -1||dataset_vector[i]->neighbour_cluster_accessor().first == -1) //for unassigned points
+			if(dataset_vector[i]->is_assigned()==0) //for unassigned points
 			{
-				for(unsigned cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
+				for(unsigned int cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
 				{
 					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
 					update_cluster_vector(dataset_vector[i],distance,cluster_vector,cluster_num );
 
 				}
+			}
+			else
+			{
+				for(unsigned int cluster_num=0;cluster_num<cluster_vector.size();cluster_num++)
+				{
+					distance=vectors_distance(metric,centroid_vector[cluster_num]->point_accessor(),dataset_vector[i]->point_accessor());
+					is_second_nearest(distance,dataset_vector[i],cluster_num);
+
+				}
+			}
+			if(dataset_vector[i]->neighbour_cluster_accessor().second>2)
+			{
+				
+				dataset_vector[i]->change_neighbour_cluster(dataset_vector[i]->cluster_number_accessor().first,dataset_vector[i]->cluster_number_accessor().second);
+
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}

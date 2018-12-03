@@ -11,5 +11,6 @@ int is_nearest(double ,DataVector * ,int);
 int update_cluster_vector(DataVector * ,double , vector <Cluster *> &,int);
 double find_lsh_radius(vector <DataVector *> &, string);
 double cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,	vector <DataVector *> &);
+int is_second_nearest(double ,DataVector * ,int );
 
 

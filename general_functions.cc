@@ -386,7 +386,7 @@ void print_output(int initialization,int assignment,int update, ofstream & outpu
 	for (int x=0;x <silhouette_vector.size();x++)
 	{
 		mean_silhouette+=silhouette_vector[x];
-		output << silhouette_vector[x]/cluster_vector[x]->content_accessor().size() << " ";
+		output << silhouette_vector[x]/cluster_vector[x]->content_accessor().size() <<" ";
 	}
 	output << endl;
 	mean_silhouette/=total_dataset;
@@ -510,8 +510,7 @@ void reset_distances(vector <DataVector *> & dataset_vector)
 {
 	for (int i=0;i<dataset_vector.size();i++)
    	{
-   		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
-		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
+   		dataset_vector[i]->change_assigned(0);
    	}
    	return;
 

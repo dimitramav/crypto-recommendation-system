@@ -17,7 +17,8 @@ protected:
 	vector<int> h;
 	int is_centroid; 
 	pair <int,double> cluster_number; //belongs to a cluster (is not centroid)
-	pair <int,double> neighbour_cluster; 
+	pair <int,double> neighbour_cluster;
+	int assigned; 
 public:
 	DataVector();
 	~DataVector();
@@ -34,6 +35,8 @@ public:
 	void change_neighbour_cluster(int,double);
 	pair <int,double> cluster_number_accessor();
 	pair <int,double> neighbour_cluster_accessor();
+	int is_assigned();
+	void change_assigned(int);
 };
 
 
@@ -103,6 +106,8 @@ double call_assignment(int , list <DataVector *> * ,int ,int ,int , int, vector 
 void delete_data(vector <DataVector *> &,string , vector <double> ** ,double ** ,vector <double> ** ,int);
 void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
+map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
+
 
 
 

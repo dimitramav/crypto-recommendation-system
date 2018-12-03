@@ -122,6 +122,15 @@ pair <int,double> DataVector::neighbour_cluster_accessor()
 
 }
 
+int DataVector::is_assigned()
+{
+	return assigned;
+}
+
+void DataVector::change_assigned(int i)
+{
+	assigned=i;
+}
 /* Euclidean */
 
 Euclidean::Euclidean(vector <double> line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
@@ -153,6 +162,7 @@ Euclidean::Euclidean(vector <double> line,string vector_name,int k, int L,vector
 	neighbour_cluster.first = -1;
 	neighbour_cluster.second = numeric_limits<double>::max();
 	is_centroid = 0; 
+	assigned = 0;
 	//copy(g.begin(),g.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -194,6 +204,7 @@ Cosine::Cosine(vector <double> line,string vector_name,int k, int L,vector <doub
 	neighbour_cluster.first = -1;
 	neighbour_cluster.second = numeric_limits<double>::max();
 	is_centroid = 0; 
+	assigned = 0;
 	//copy(v.begin(),v.end(),std::ostream_iterator<double>(std::cout, "  " ));
 
 }
@@ -251,22 +262,34 @@ void Cluster::change_external_centroid(vector <double> centroid_vector)
 vector <double> Cluster::kmeans(int cluster)
 {
 	vector <double> mean_vector;
-	int dimension = cluster_content.front()->point_accessor().size(); //dimension of mean vector
-	for (int i =0; i<dimension;i++)  //initialize mean vector
+	int dimension;
+	if(cluster_content.size()==0)
 	{
-		mean_vector.push_back(0);
+		mean_vector.push_back(0.0);
+
 	}
-	for ( auto v : cluster_content)
+	else
 	{
-		for (unsigned int i =0; i< v->point_accessor().size();i++)
+		dimension = cluster_content.front()->point_accessor().size(); //dimension of mean vector
+		for (int i =0; i<dimension;i++)  //initialize mean vector
 		{
-			mean_vector[i]= mean_vector[i] +v->point_accessor()[i];
+			mean_vector.push_back(0);
 		}
-	}
-	for (int i =0; i<dimension;i++)
-	{
-		mean_vector[i]= mean_vector[i] / cluster_content.size();
+		for ( auto v : cluster_content)
+		{	
+			for (unsigned int i =0; i< v->point_accessor().size();i++)
+			{
+				mean_vector[i]= mean_vector[i] +v->point_accessor()[i];
+			}
+		}
+		for (int i =0; i<dimension;i++)
+		{
+			if(cluster_content.size()==0)
+				mean_vector[i]=0.0;
+			else
+				mean_vector[i]= mean_vector[i] / cluster_content.size();
 		//cout << mean_vector[i] << "  " ;
+		}
 	}
 	//getchar();
 	return mean_vector; 

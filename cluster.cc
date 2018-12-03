@@ -146,7 +146,7 @@ int main(int argc, char * argv[])
 					}
 					counter++;
 				}
-				while((new_objective_distance/previous_objective_distance<(double)0.9999 && counter<25) || counter==1);
+				while((new_objective_distance/previous_objective_distance<(double)0.999 && counter<25)||counter==1);
 				cout << "out objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
 				int stop_clock = clock();
 				double total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
