@@ -51,14 +51,11 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 	double previous_first=0.0;
 	if(querypoint->is_assigned()==0)
 	{
-		previous_first=first_minimum_distance;
 		first_minimum_distance = numeric_limits<double>::max();
 	}
 	if(distance<first_minimum_distance)
 	{
 		if(neighbour_cluster == new_cluster && querypoint->is_assigned()==1) //swap neighbour cluster with current cluster
-			querypoint->change_neighbour_cluster(current_cluster,previous_first); 
-		else if (neighbour_cluster == new_cluster && querypoint->is_assigned()==0)
 			querypoint->change_neighbour_cluster(current_cluster,first_minimum_distance); 
 		querypoint->change_cluster_number(new_cluster,distance);
 		querypoint->change_assigned(1);
@@ -278,7 +275,9 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		min_cluster = dataset_vector[i]->cluster_number_accessor().first;
 		for (auto point_a : cluster_vector[min_cluster]->content_accessor() )
 		{		
-			distance_a += point_a->cluster_number_accessor().second;
+			//distance_a += point_a->cluster_number_accessor().second;
+			distance_a +=vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
+
 		}
 		distance_a = distance_a/cluster_vector[min_cluster]->content_accessor().size();
 		neighbour_cluster = dataset_vector[i]->neighbour_cluster_accessor().first;
@@ -293,11 +292,10 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 		}
 		for (auto point_a : cluster_vector[neighbour_cluster]->content_accessor() )
 		{
-
-			distance_b += point_a->neighbour_cluster_accessor().second;		
+			distance_b+=vectors_distance(metric,dataset_vector[i]->point_accessor(),point_a->point_accessor());
+			//distance_b += point_a->neighbour_cluster_accessor().second;		
 		}
 		distance_b = distance_b/cluster_vector[neighbour_cluster]->content_accessor().size();
-		cout << distance_a << " " << distance_b<< endl;
 		final_silhouette = (distance_b - distance_a)/max(distance_b,distance_a);
 		silhouette_vector[min_cluster]+= final_silhouette;
     	//cout <<dataset_vector[i]->name_accessor()<< " distance_a " <<distance_a <<"distance_b " << distance_b<< " "<< final_distance << endl;
@@ -340,6 +338,8 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 	int big_radius;
 	double new_objective_distance = 0.0;
 	double radius = find_lsh_radius(centroid_vector,metric);
+	if (radius ==0.0)
+		radius =0.2;
 	do
 	{
 		points_has_changed =0; 
@@ -372,7 +372,6 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 					}
 				}
 			}
-			cout << radius << endl;
 			radius*=2;
 		}while(points_has_changed>0 || big_radius ==0);  //there is no need to increase the radius because each point in centroid's bucket is assigned
 		int points = 0;
@@ -405,7 +404,7 @@ double lsh_assignment(int L,int k,HashTable * hashtables_vector,vector <Cluster 
 			}
 			new_objective_distance +=dataset_vector[i]->cluster_number_accessor().second;
 		}
-		cout << "UNASSIGNED " << points; 
+		cout << "UNASSIGNED " << points<< endl; 
 		return new_objective_distance;
 	}
 

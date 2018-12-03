@@ -511,6 +511,7 @@ void reset_distances(vector <DataVector *> & dataset_vector)
 	for (int i=0;i<dataset_vector.size();i++)
    	{
    		dataset_vector[i]->change_assigned(0);
+   		//dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits <double> ::max());
    	}
    	return;
 
