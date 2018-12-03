@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
 		}
 	}
   	/* 2. CREATE HYPERCUBE */
-	int hypercube_dimension= int(pow(2.0,parameters["number_of_hashfunctions"]));
+	int hypercube_dimension= int(pow(2.0,parameters["k"]));
 	list <DataVector * >  hypercube[hypercube_dimension];
 
 	/* 3. FILL HYPERCUBE */

@@ -170,6 +170,11 @@ int initialize_params(string configuration_path, map <string,double>& parameters
 		cout << "Cannot allocate memory for the array" << endl;
 		return 0;
 	}
+	if(pow(2.0,parameters["k"])<parameters["number_of_clusters"])
+	{
+		cout << "Number of clusters needs to be smaller" << endl;
+		return 0;
+	}
 	return 1;
 }
 
@@ -362,7 +367,7 @@ void print_output(int initialization,int assignment,int update, ofstream & outpu
 	double mean_silhouette=0.0;
 	output << "I" << initialization <<"A" << assignment <<"U" <<update <<endl;
 	output << "Metric : " << metric << endl;
-	for (int i=0;i<cluster_vector.size();i++)
+	for (unsigned int i=0;i<cluster_vector.size();i++)
 	{
 		output << "CLUSTER-" << i+1 << " " ;
 		if (complete==1)
@@ -383,7 +388,7 @@ void print_output(int initialization,int assignment,int update, ofstream & outpu
 	}
 	output << "Clustering time: " << total_time << endl;
 	output << "Silhouette: ";
-	for (int x=0;x <silhouette_vector.size();x++)
+	for (unsigned int x=0;x <silhouette_vector.size();x++)
 	{
 		mean_silhouette+=silhouette_vector[x];
 		output << silhouette_vector[x]/cluster_vector[x]->content_accessor().size() <<" ";
@@ -497,7 +502,7 @@ void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dat
    	}
    	cluster_vector.clear();
    	//redefine datavectors
-   	for (int i=0;i<dataset_vector.size();i++)
+   	for (unsigned int i=0;i<dataset_vector.size();i++)
    	{
    		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
 		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
@@ -508,7 +513,7 @@ void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dat
 
 void reset_distances(vector <DataVector *> & dataset_vector)
 {
-	for (int i=0;i<dataset_vector.size();i++)
+	for (unsigned int i=0;i<dataset_vector.size();i++)
    	{
    		dataset_vector[i]->change_assigned(0);
    		//dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits <double> ::max());

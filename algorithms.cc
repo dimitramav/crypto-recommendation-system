@@ -19,6 +19,7 @@
 #include <random>
 #include <ctime>
 #include <utility>
+#include <cmath>
 #include "datastructs.h"
 #include "algorithms.h"
 
@@ -48,7 +49,6 @@ int is_nearest(double distance,DataVector * querypoint,int new_cluster) //calcul
 	double first_minimum_distance = querypoint->cluster_number_accessor().second;
 	int neighbour_cluster = querypoint->neighbour_cluster_accessor().first;
 	double second_minimum_distance = querypoint->neighbour_cluster_accessor().second;
-	double previous_first=0.0;
 	if(querypoint->is_assigned()==0)
 	{
 		first_minimum_distance = numeric_limits<double>::max();
@@ -222,13 +222,11 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 void pam_update(vector <Cluster *> & cluster_vector,string metric)
 {
 	vector <double > centroid_vector;
-	DataVector * current_centroid;
 	double distance;
 	DataVector * new_centroid; 
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //vector with centroids for compatibility reasons
 	{
 		double minimum_distance;
-		current_centroid = cluster_vector[i]->centroid_accessor();
 		//cout << "old centroid number " << i << " is " <<  cluster_vector[i]->centroid_accessor()->name_accessor();
 		minimum_distance = numeric_limits<double>::max();
 		if(cluster_vector[i]->is_updated())
@@ -258,7 +256,6 @@ void pam_update(vector <Cluster *> & cluster_vector,string metric)
 vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vector <Cluster *> & cluster_vector,string metric)
 {
 	int min_cluster;
-	double a =0.0;
 	int neighbour_cluster;
 	double final_silhouette; 
 	double distance_a;
@@ -266,7 +263,7 @@ vector <double> silhouette_evaluation(vector <DataVector *> & dataset_vector,vec
 	vector <double> silhouette_vector;
 	int counter = 0;
 	cout << "in silhouette" << endl;
-	for (int i=0;i<cluster_vector.size();i++)
+	for ( unsigned int i=0;i<cluster_vector.size();i++)
 	{
 		silhouette_vector.push_back(0);
 	}

@@ -19,6 +19,7 @@
 #include <utility>
 #include <cstdlib>
 #include <getopt.h>
+#include <cmath>
 #include "datastructs.h"
 
 
