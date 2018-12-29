@@ -502,9 +502,3 @@ void reset_distances(vector <DataVector *> & dataset_vector)
 
 }
 
-/* CRYPTOCURRENCIES */
-
-void read_crypto(vector<string> & cryptocurrencies)
-{
-
-}

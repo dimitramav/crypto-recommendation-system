@@ -79,6 +79,12 @@ class Cluster{
 		
 };
 
+class Twitter{
+	double sentiment_score;
+	Twitter(double);
+	~Twitter();
+}
+
 typedef unordered_map <string, list <DataVector *> >HashTable;
 
 //general functions for both lsh and cube
@@ -108,8 +114,9 @@ void delete_data(vector <DataVector *> &,string , vector <double> ** ,double ** 
 void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
-void read_crypto(vector<string> &);
 
+//twitter analysis
+int read_coins(string , vector<string> &);
 
 
 

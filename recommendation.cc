@@ -24,8 +24,12 @@ int main(int argc, char * argv[])
 		return 1;	 
 	/* 3. READ CONFIGURATION FILE FOR FILE PARAMETERS */
 	if(!initialize_params(config_path2,clustering_parameters,file_parameters,"file_config"))
-		return 1;	 
-	//read_crypto(cryptocurrencies);
-	cout << file_parameters["coins"] << " " << clustering_parameters["w"] << endl;
+		return 1;	
+	/* 4. CREATE COINS ARRAY */ 
+	if(!read_coins(file_parameters["coins"],cryptocurrencies))
+		return 1;
+	/* 5. CREATE SENTIMENT DICTIONARY */	
+	if(!read_lexicon(file_parameters["coins"],cryptocurrencies))
+		return 1;
 
 }
