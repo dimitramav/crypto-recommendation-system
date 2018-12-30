@@ -15,6 +15,7 @@ int main(int argc, char * argv[])
 	string input_path,configuration_path,output_path,config_path1,config_path2;
 	map <string,double> clustering_parameters;
 	map <string,string> file_parameters;
+	map <string,double> lexicon;
 	int validate = -1;
 	/* 1. READ ARGUREMENTS */
 	if(read_arguements(argc, argv, input_path,configuration_path,validate,output_path,config_path1,config_path2)==-1)
@@ -29,7 +30,11 @@ int main(int argc, char * argv[])
 	if(!read_coins(file_parameters["coins"],cryptocurrencies))
 		return 1;
 	/* 5. CREATE SENTIMENT DICTIONARY */	
-	if(!read_lexicon(file_parameters["coins"],cryptocurrencies))
+	if(!read_lexicon(file_parameters["lexicon"],lexicon))
 		return 1;
+	for(auto elem : lexicon)
+	{
+		std::cout << elem.first << " " << elem.second << "\n";
+	}
 
 }

@@ -83,7 +83,7 @@ class Twitter{
 	double sentiment_score;
 	Twitter(double);
 	~Twitter();
-}
+};
 
 typedef unordered_map <string, list <DataVector *> >HashTable;
 
@@ -117,6 +117,8 @@ map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
 
 //twitter analysis
 int read_coins(string , vector<string> &);
+int read_lexicon(string, map<string,double> &);
+
 
 
 
