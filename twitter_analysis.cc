@@ -58,3 +58,74 @@ int read_lexicon(string lexicon_path, map<string,double> &lexicon)
 	}
 	return 1;
 }
+
+int check_coins(string word, vector<string> & coins)
+{
+	string alt_coin;
+	vector <int> twitter_has_crypto;
+	for (int i=0;i<coins.size();i++)
+	{
+		stringstream linestream(coins[i]);
+		while( getline(linestream, alt_coin, '\t'))
+		{
+			if(alt_coin.compare(word)==0)
+			{
+				return i;  //reference for the crypto that is mentioned
+			}
+		}
+	}
+	return -1;
+}
+
+int calculate_score(string word,map<string,double> & lexicon)
+{
+	if ( lexicon.find(word) == lexicon.end() ) 
+	{
+  		// not found
+  		return 0;
+	}
+	else 
+	{
+  		//found
+  		return lexicon.find(word)->second;
+	}
+}
+
+ int twitter_analysis(string input_path, vector<Twitter> & twitter_vector,map<string,double> & lexicon, vector<string> &coins)
+{
+	ifstream twitter_file;
+	set<int> twitter_has_coins;
+	string line,data;
+	int cryptoreference;
+	int userid,tweet_id;
+	twitter_file.open(input_path.c_str());  //convert string to const char *
+	int word_num=0;
+	double total_score=0;
+	while (getline(twitter_file,line))
+	{
+		stringstream linestream(line);
+		while( getline(linestream, data, '\t'))
+		{
+			if(word_num == 0)
+			{
+				userid =stoi(data);
+			}
+			else if (word_num == 1)
+			{
+				tweet_id = stoi(data);	
+			}
+			else
+			{
+				cryptoreference=check_coins(data,coins);
+				if(cryptoreference!=-1)
+					twitter_has_coins.insert(cryptoreference);
+				total_score+=calculate_score(data,lexicon);
+			}
+			word_num++;
+		}
+		total_score = total_score/(total_score*total_score+15); //regulate score
+		word_num = 0;
+		twitter_has_coins.clear();
+	}
+	return 1;
+}

@@ -16,6 +16,7 @@ int main(int argc, char * argv[])
 	map <string,double> clustering_parameters;
 	map <string,string> file_parameters;
 	map <string,double> lexicon;
+	vector <Twitter> twitter_vector;
 	int validate = -1;
 	/* 1. READ ARGUREMENTS */
 	if(read_arguements(argc, argv, input_path,configuration_path,validate,output_path,config_path1,config_path2)==-1)
@@ -32,9 +33,8 @@ int main(int argc, char * argv[])
 	/* 5. CREATE SENTIMENT DICTIONARY */	
 	if(!read_lexicon(file_parameters["lexicon"],lexicon))
 		return 1;
-	for(auto elem : lexicon)
-	{
-		std::cout << elem.first << " " << elem.second << "\n";
-	}
+	/* 6. SAVE TWITTERS IN AN ARRAY */
+	if(!twitter_analysis(input_path,twitter_vector,lexicon,cryptocurrencies))
+		return 1;
 
 }

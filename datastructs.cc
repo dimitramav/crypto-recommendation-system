@@ -324,3 +324,13 @@ int Cluster::is_updated()
 
 
 
+/* Twitter */
+
+Twitter::Twitter(double x)
+{
+	sentiment_score=x;
+}
+
+Twitter::~Twitter()
+{
+}
