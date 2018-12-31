@@ -81,9 +81,16 @@ class Cluster{
 
 class Twitter{
 	protected:
-		double sentiment_score;
+		int twitter_id;
+		int user_id;
+		double total_score;
+		set<int> crypto_mentioned;
 	public:
-		Twitter(double);
+		Twitter(int,int,double,set<int>);
+		int get_twitterid();
+		int get_userid();
+		double get_twitter_score();
+		set<int> get_crypto_mentioned();
 		~Twitter();
 };
 
@@ -120,7 +127,7 @@ map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
 //twitter analysis
 int read_coins(string , vector<string> &);
 int read_lexicon(string, map<string,double> &);
-int twitter_analysis(string , vector<Twitter> &,map<string,double> &,vector<string> &);
+int twitter_analysis(string , vector<Twitter* > &,map<string,double> &,vector<string> &,map<int,vector<int>> &);
 int check_coins(string, vector<string> & );
 int calculate_score(string ,map<string,double> & );
 

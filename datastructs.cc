@@ -326,11 +326,37 @@ int Cluster::is_updated()
 
 /* Twitter */
 
-Twitter::Twitter(double x)
+Twitter::Twitter(int tid,int uid, double score, set<int> crypto_array)
 {
-	sentiment_score=x;
+	twitter_id = tid;
+	user_id = uid;
+	total_score = score;
+	for (auto crypto : crypto_array)
+	{
+		crypto_mentioned.insert(crypto);
+	}
 }
 
 Twitter::~Twitter()
 {
+}
+
+int Twitter::get_twitterid()
+{
+	return twitter_id;
+}
+
+int Twitter::get_userid()
+{
+	return user_id;
+}
+
+double Twitter::get_twitter_score()
+{
+	return total_score;
+}
+
+set<int> Twitter::get_crypto_mentioned()
+{
+	return crypto_mentioned;
 }

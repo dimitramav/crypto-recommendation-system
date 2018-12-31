@@ -91,7 +91,7 @@ int calculate_score(string word,map<string,double> & lexicon)
 	}
 }
 
- int twitter_analysis(string input_path, vector<Twitter> & twitter_vector,map<string,double> & lexicon, vector<string> &coins)
+ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<string,double> & lexicon, vector<string> &coins,map<int,vector<int>> &user_has_tweets)
 {
 	ifstream twitter_file;
 	set<int> twitter_has_coins;
@@ -99,8 +99,14 @@ int calculate_score(string word,map<string,double> & lexicon)
 	int cryptoreference;
 	int userid,tweet_id;
 	twitter_file.open(input_path.c_str());  //convert string to const char *
+	if (!twitter_file.is_open())
+	{
+		cout << "Fail to open twitter file" << endl;
+		return 0;
+	}
 	int word_num=0;
 	double total_score=0;
+	int tweet_num = 0;
 	while (getline(twitter_file,line))
 	{
 		stringstream linestream(line);
@@ -112,7 +118,9 @@ int calculate_score(string word,map<string,double> & lexicon)
 			}
 			else if (word_num == 1)
 			{
-				tweet_id = stoi(data);	
+				tweet_id = stoi(data);
+				user_has_tweets[userid].push_back(tweet_num);
+				tweet_num++;	
 			}
 			else
 			{
@@ -124,8 +132,11 @@ int calculate_score(string word,map<string,double> & lexicon)
 			word_num++;
 		}
 		total_score = total_score/(total_score*total_score+15); //regulate score
+		Twitter * twitter = new Twitter(tweet_id,userid,total_score, twitter_has_coins);
+		twitter_vector.push_back(twitter);
 		word_num = 0;
 		twitter_has_coins.clear();
+
 	}
 	return 1;
 }
