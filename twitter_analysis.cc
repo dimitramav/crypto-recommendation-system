@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 /* CRYPTOCURRENCIES */
 
 int read_coins(string coins_path, vector<string> & cryptocurrencies)
@@ -68,6 +69,10 @@ int check_coins(string word, vector<string> & coins)
 		stringstream linestream(coins[i]);
 		while( getline(linestream, alt_coin, '\t'))
 		{
+			if (!word.empty() && (word[word.size() - 1] == '\r' || word[word.size() - 1] == '\n'))
+				word.erase(word.size() - 1);
+			if (!alt_coin.empty() && (alt_coin[alt_coin.size() - 1] == '\r' || alt_coin[alt_coin.size() - 1] == '\n'))
+				alt_coin.erase(alt_coin.size() - 1);
 			if(alt_coin.compare(word)==0)
 			{
 				return i;  //reference for the crypto that is mentioned
@@ -82,16 +87,16 @@ int calculate_score(string word,map<string,double> & lexicon)
 	if ( lexicon.find(word) == lexicon.end() ) 
 	{
   		// not found
-  		return 0;
+		return 0;
 	}
 	else 
 	{
   		//found
-  		return lexicon.find(word)->second;
+		return lexicon.find(word)->second;
 	}
 }
 
- int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<string,double> & lexicon, vector<string> &coins,map<int,vector<int>> &user_has_tweets)
+int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<string,double> & lexicon, vector<string> &coins,map<int,vector<int>> &user_has_tweets)
 {
 	ifstream twitter_file;
 	set<int> twitter_has_coins;
@@ -119,6 +124,7 @@ int calculate_score(string word,map<string,double> & lexicon)
 			else if (word_num == 1)
 			{
 				tweet_id = stoi(data);
+				//cout <<"tweet " << tweet_id << endl;
 				user_has_tweets[userid].push_back(tweet_num);
 				tweet_num++;	
 			}
@@ -132,6 +138,8 @@ int calculate_score(string word,map<string,double> & lexicon)
 			word_num++;
 		}
 		total_score = total_score/(total_score*total_score+15); //regulate score
+		//cout << total_score<< endl;
+		//getchar(); 
 		Twitter * twitter = new Twitter(tweet_id,userid,total_score, twitter_has_coins);
 		twitter_vector.push_back(twitter);
 		word_num = 0;
@@ -140,3 +148,60 @@ int calculate_score(string word,map<string,double> & lexicon)
 	}
 	return 1;
 }
+
+void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitter_vector, map<int,vector<int>> user_has_tweets,map< int,vector<double> > &uj)
+{
+	for(auto user : user_has_tweets)
+	{
+
+		//cout << "user " << user.first << " ";
+		for (int i=0;i<num_of_cryptos;i++)
+		{
+			uj[user.first].push_back(10000);
+		}
+   		for (int tweet_num=0;tweet_num<user.second.size();tweet_num++)  //tweets of this user
+   		{
+   			Twitter * user_twitter = twitter_vector[user.second[tweet_num]];
+   			//cout << " tweet " << user_twitter->get_twitterid()<< " " ;
+   			//cout << " has crypto " << " ";
+   			for(auto crypto_num: user_twitter->get_crypto_mentioned())
+   			{
+   				//cout << crypto_num << " ";
+   				if(uj[user.first][crypto_num]==10000)
+   					uj[user.first][crypto_num] = 0.0;
+   				uj[user.first][crypto_num]+=user_twitter->get_twitter_score();
+   			}
+   			//cout << endl;
+   		}
+   		//getchar();
+   	}
+   	return;
+ }
+
+   void find_uknown_cryptos(map<int,vector<double>> uj,map<int,vector<int>> & user_uknown_cryptos)
+   {
+   		int crypto_num = 0; 
+		for (auto user : uj) //iterate users
+		{
+			for(auto crypto : user.second)  //iterate cryptos of each user
+			{
+				if(crypto == 10000)
+					user_uknown_cryptos[user.first].push_back(crypto_num);
+				crypto_num++;
+			}
+		}
+		return;
+   }
+
+    void regulate(map<int,vector<double>> & uj,map<int,vector<int>> user_uknown_cryptos)
+    {
+    	for (auto user:uj)
+    	{
+    		int total_cryptos = user.second.size();
+    		int uknown_cryptos = user_uknown_cryptos.find(user.first)->second.size();
+    		if(uknown_cryptos == total_cryptos)
+    			cout <<"user " <<  user.first << endl;
+    		//number_of_known_cryptos = user.second.size()
+    	}
+    }
+

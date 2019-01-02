@@ -130,6 +130,11 @@ int read_lexicon(string, map<string,double> &);
 int twitter_analysis(string , vector<Twitter* > &,map<string,double> &,vector<string> &,map<int,vector<int>> &);
 int check_coins(string, vector<string> & );
 int calculate_score(string ,map<string,double> & );
+void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int,vector<double> > &);
+void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
+void regulate(map<int,vector<double>> & ,map<int,vector<int>>);
+
+
 
 
 
