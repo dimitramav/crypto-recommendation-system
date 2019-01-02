@@ -195,13 +195,24 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 
     void regulate(map<int,vector<double>> & uj,map<int,vector<int>> user_uknown_cryptos)
     {
+    	int total_cryptos,unknown_cryptos,known_cryptos;
+    	double total_value=0.0;
+    	double mean_value;
     	for (auto user:uj)
     	{
-    		int total_cryptos = user.second.size();
-    		int uknown_cryptos = user_uknown_cryptos.find(user.first)->second.size();
-    		if(uknown_cryptos == total_cryptos)
-    			cout <<"user " <<  user.first << endl;
-    		//number_of_known_cryptos = user.second.size()
+    	 	total_cryptos = user.second.size();
+    		unknown_cryptos = user_uknown_cryptos.find(user.first)->second.size();
+    		known_cryptos = total_cryptos - unknown_cryptos;
+    		total_value = 0.0;
+    		for (auto value_crypto : user.second)
+    		{
+    			cout << value_crypto << " ";
+    			if(value_crypto!=10000)
+    				total_value +=value_crypto;
+    		}
+    		cout << endl;
+    		mean_value = total_value/known_cryptos;
+    		cout <<"mean_value " << mean_value << endl;
     	}
     }
 

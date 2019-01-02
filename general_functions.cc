@@ -342,9 +342,11 @@ int read_arguements(int argc, char ** argv, string & input_path, string & config
 	return 0;
 }
 
-void print_output(int initialization,int assignment,int update, ofstream & output,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
+void print_output(int initialization,int assignment,int update,string output_path,vector <Cluster * > & cluster_vector ,int complete ,vector <double> & silhouette_vector,string metric,double total_time,int total_dataset)
 {
 	double mean_silhouette=0.0;
+	ofstream output;
+	output.open(output_path.c_str());  //convert string to const char *
 	output << "I" << initialization <<"A" << assignment <<"U" <<update <<endl;
 	output << "Metric : " << metric << endl;
 	for (unsigned int i=0;i<cluster_vector.size();i++)
@@ -414,7 +416,7 @@ void call_update(int update,int assignment, vector <Cluster *> & cluster_vector,
 	return;
 }
 
-double call_assignment(int assignment, list <DataVector *> * hypercube,int M,int probes,int k, int hypercube_dimension, vector <Cluster *> cluster_vector,string metric,vector <DataVector *> dataset_vector,vector <DataVector*> centroid_vector,HashTable * hashtables_vector,int L)
+double call_assignment(int assignment, int k, vector <Cluster *> cluster_vector,string metric,vector <DataVector *> dataset_vector,vector <DataVector*> centroid_vector,HashTable * hashtables_vector,int L)
 {
 	double new_objective_distance;
 	if (assignment==1)
@@ -427,11 +429,6 @@ double call_assignment(int assignment, list <DataVector *> * hypercube,int M,int
 		cout << "lsh_assignment" << endl;
 		new_objective_distance = lsh_assignment(L,k,hashtables_vector,cluster_vector,metric,dataset_vector,centroid_vector);
 
-	}
-	else
-	{
-		cout << "cube_assignment" << endl;
-		new_objective_distance  = cube_assignment(hypercube,M,probes,k, hypercube_dimension,cluster_vector,metric,dataset_vector,centroid_vector);
 	}
 	return new_objective_distance;
 }	
@@ -502,3 +499,47 @@ void reset_distances(vector <DataVector *> & dataset_vector)
 
 }
 
+int initialize_ready_tweets_vector(string input_path,string metric,double ** & ht,vector <double> ** & hr, vector <double> ** & hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &ready_tweets_vector)
+{
+	string line;
+	ifstream input;
+	input.open(input_path.c_str());  //convert string to const char *
+	DataVector * datapoint;
+	int dimension = 0; 
+   	if (!input.is_open())
+   	{
+   		cout << "Failed to open file." << endl;
+   		return 0;
+   	}
+	while (getline(input, line))  //read dataset line by line
+	{
+		//first vector
+		if(dimension==0)
+		{
+			dimension=find_dimension(line);
+			/* 5. INITIALIZE TABLES */
+			initialize_tables(metric,ht,hr,hv,dimension,w,number_of_hashtables,number_of_hashfunctions);
+
+		}
+		datapoint = create_datapoint(line,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		ready_tweets_vector.push_back(datapoint);   
+	}
+	return 1;
+}
+
+
+int extract_id(string str)
+{
+	size_t i = 0;
+	for ( ; i < str.length(); i++ )
+	{ 
+		if ( isdigit(str[i]) ) break; 
+	}
+
+	// remove the first chars, which aren't digits
+	str = str.substr(i, str.length() - i );
+
+// convert the remaining text to an integer
+	int id = atoi(str.c_str());
+	return id;
+}

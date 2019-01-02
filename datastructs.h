@@ -115,14 +115,15 @@ string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
 int cube_key(string ,string);
 int read_arguements(int, char **, string &, string &, int & , string & ,string &, string & );
-void print_output(int,int,int,ofstream &,vector <Cluster * > &,int,vector <double> &,string,double,int);
+void print_output(int,int,int,string,vector <Cluster * > &,int,vector <double> &,string,double,int);
 void call_initialization(int , vector <DataVector *> &, vector <Cluster *> &,int ,string );
 void call_update(int ,int , vector <Cluster *> & ,int ,int ,double ** ,vector <double> ** , vector <double> ** ,int ,string);
-double call_assignment(int , list <DataVector *> * ,int ,int ,int , int, vector <Cluster *> ,string ,vector <DataVector *>,vector <DataVector*>,HashTable *,int);
+double call_assignment(int, int, vector <Cluster *>,string ,vector <DataVector *> ,vector <DataVector*> ,HashTable * ,int);
 void delete_data(vector <DataVector *> &,string , vector <double> ** ,double ** ,vector <double> ** ,int);
 void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
+int extract_id(string);
 
 //twitter analysis
 int read_coins(string , vector<string> &);
@@ -133,6 +134,8 @@ int calculate_score(string ,map<string,double> & );
 void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int,vector<double> > &);
 void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
 void regulate(map<int,vector<double>> & ,map<int,vector<int>>);
+int initialize_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
+
 
 
 
