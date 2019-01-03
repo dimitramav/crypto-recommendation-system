@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <math.h>       /* sqrt */
+
 /* CRYPTOCURRENCIES */
 
 int read_coins(string coins_path, vector<string> & cryptocurrencies)
@@ -64,7 +66,7 @@ int check_coins(string word, vector<string> & coins)
 {
 	string alt_coin;
 	vector <int> twitter_has_crypto;
-	for (int i=0;i<coins.size();i++)
+	for (unsigned int i=0;i<coins.size();i++)
 	{
 		stringstream linestream(coins[i]);
 		while( getline(linestream, alt_coin, '\t'))
@@ -82,7 +84,7 @@ int check_coins(string word, vector<string> & coins)
 	return -1;
 }
 
-int calculate_score(string word,map<string,double> & lexicon)
+double calculate_score(string word,map<string,double> & lexicon)
 {
 	if ( lexicon.find(word) == lexicon.end() ) 
 	{
@@ -103,6 +105,7 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 	string line,data;
 	int cryptoreference;
 	int userid,tweet_id;
+	double total_score;
 	twitter_file.open(input_path.c_str());  //convert string to const char *
 	if (!twitter_file.is_open())
 	{
@@ -110,11 +113,12 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 		return 0;
 	}
 	int word_num=0;
-	double total_score=0;
 	int tweet_num = 0;
 	while (getline(twitter_file,line))
 	{
 		stringstream linestream(line);
+		//int print =0;
+		total_score = 0;
 		while( getline(linestream, data, '\t'))
 		{
 			if(word_num == 0)
@@ -124,6 +128,8 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 			else if (word_num == 1)
 			{
 				tweet_id = stoi(data);
+				//if (tweet_id == 3)
+				//	print=1;
 				//cout <<"tweet " << tweet_id << endl;
 				user_has_tweets[userid].push_back(tweet_num);
 				tweet_num++;	
@@ -134,11 +140,14 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 				if(cryptoreference!=-1)
 					twitter_has_coins.insert(cryptoreference);
 				total_score+=calculate_score(data,lexicon);
+				//if (print==1)
+				//	cout << data << " " << total_score << endl;
 			}
 			word_num++;
 		}
-		total_score = total_score/(total_score*total_score+15); //regulate score
-		//cout << total_score<< endl;
+		total_score = total_score/sqrt(total_score*total_score+15); //regulate score
+		//if(print==1)
+		//	cout << "total_score " << total_score << endl;
 		//getchar(); 
 		Twitter * twitter = new Twitter(tweet_id,userid,total_score, twitter_has_coins);
 		twitter_vector.push_back(twitter);
@@ -159,7 +168,7 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 		{
 			uj[user.first].push_back(10000);
 		}
-   		for (int tweet_num=0;tweet_num<user.second.size();tweet_num++)  //tweets of this user
+   		for (unsigned int tweet_num=0;tweet_num<user.second.size();tweet_num++)  //tweets of this user
    		{
    			Twitter * user_twitter = twitter_vector[user.second[tweet_num]];
    			//cout << " tweet " << user_twitter->get_twitterid()<< " " ;
@@ -216,3 +225,42 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
     	}
     }
 
+void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector <Twitter *> twitter_vector,	map< int, vector<double> >& cj)
+{
+	int cluster_tweet_id;
+	Twitter * current_twitter;
+	for(unsigned int cluster =0;cluster<cluster_vector.size();cluster++)  //for each cluster
+	{
+		for (int i=0;i<num_of_cryptos;i++)
+		{
+			cj[cluster].push_back(10000);
+		}
+		for(auto cluster_twitter: cluster_vector[cluster]->content_accessor())  //for each cluster's vector
+		{
+			cluster_tweet_id=cluster_twitter->id_accessor();
+			cout << "twitter in cluster with id " << cluster_tweet_id << " has crypto ";
+			for(auto twitter:twitter_vector )    //twitter reference from cluster to twitter vector to calculate score
+			{
+				if(twitter->get_twitterid()==cluster_tweet_id)
+				{
+					current_twitter = twitter;
+					break;
+				}
+			}
+			for(auto crypto_num: current_twitter->get_crypto_mentioned())
+   			{
+   				cout << crypto_num << " ";
+   				if(cj[cluster][crypto_num]==10000)
+   					cj[cluster][crypto_num] = 0.0;
+   				cj[cluster][crypto_num]+=current_twitter->get_twitter_score();
+   			}
+   			// for(int i=0;i<num_of_cryptos;i++)
+   			// {
+   			// 	cout << cj[cluster][i] << " ";
+   			// }
+   			cout << endl;
+
+		}
+		getchar();
+	}
+}

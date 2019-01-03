@@ -13,6 +13,7 @@ using namespace std;
 
 class DataVector{
 protected:
+	int id;
 	string name;
 	vector<double> v;
 	vector<int> h;
@@ -26,7 +27,7 @@ public:
 	static int no_of_dataset;
 	void print_vector(ofstream &);
 	string key_accessor(int,int);  
-	string name_accessor();
+	int id_accessor();
 	vector <double> point_accessor();
 	void set_point(vector <double>);
 	void set_centroid();
@@ -43,14 +44,14 @@ public:
 
 class Euclidean : public DataVector{
 	public:
-		Euclidean(vector <double>,string,int,int,vector <double> **, double **,int);
+		Euclidean(string,vector <double>,int,int,int,vector <double> **, double **,int);
 		~Euclidean();
 	
 };
 
 class Cosine : public DataVector{
 	public:
-		Cosine(vector <double>,string,int,int,std::vector<double> **);
+		Cosine(string,vector <double>,int,int,int,std::vector<double> **);
 		~Cosine();
 
 };
@@ -109,7 +110,7 @@ void find_parameter(string ,map<string,double> & ,map <string,string> & , string
 int initialize_params(string , map <string,double>& , map <string,string>& ,string);
 vector <double> string_to_stream(string );
 void initialize_tables(string,double ** & , vector <double> ** & , vector <double> ** & ,int,int,int,int);
-DataVector * create_datapoint(string ,string , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
+DataVector * create_datapoint(string ,int,string , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
 int hamming_distance(int, int);
 string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
@@ -124,19 +125,18 @@ void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
 int extract_id(string);
-void clustering(int,int ,int ,int ,string metric,int ,int ,int ,vector <Cluster *> & ,vector <DataVector *> & ,vector <DataVector *> & ,HashTable *,double ** ,vector <double> ** ,vector <double> ** );
-
 
 //twitter analysis
 int read_coins(string , vector<string> &);
 int read_lexicon(string, map<string,double> &);
 int twitter_analysis(string , vector<Twitter* > &,map<string,double> &,vector<string> &,map<int,vector<int>> &);
 int check_coins(string, vector<string> & );
-int calculate_score(string ,map<string,double> & );
+double calculate_score(string ,map<string,double> & );
 void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int,vector<double> > &);
 void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
 void regulate(map<int,vector<double>> & ,map<int,vector<int>>);
 int initialize_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
+void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map< int, vector<double> >&);
 
 
 

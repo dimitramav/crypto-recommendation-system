@@ -189,6 +189,7 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 {
 	vector <double> centroid_vector;
 	DataVector * centroid_point;
+	int id =0;
 	for(unsigned int i=0;i<cluster_vector.size();i++)  //vector with centroids for compatibility reasons
 	{
 
@@ -205,10 +206,11 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 		{
 			cluster_vector[i]->make_external();
 			if(metric.compare("cosine")==0) //cosine metric
-				centroid_point = new Cosine(centroid_vector,"external_centroid",k,L,hr);
+				centroid_point = new Cosine("external_centroid",centroid_vector,id,k,L,hr);
 			else
-				centroid_point = new Euclidean(centroid_vector,"external_centroid",k,L,hv,t,w);
+				centroid_point = new Euclidean("external_centroid",centroid_vector,id,k,L,hv,t,w);
 			cluster_vector[i]->create_external_centroid(centroid_point);
+			id++;
 		}
 		else
 		{

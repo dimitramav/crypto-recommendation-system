@@ -224,18 +224,18 @@ void initialize_tables(string metric, double ** & ht,vector <double> ** & hr, ve
 	return;
 }
 
-DataVector * create_datapoint(string line,string metric, double **  ht,vector <double> **  hr, vector <double> ** hv, int w,int number_of_hashtables ,int number_of_hashfunctions)
+DataVector * create_datapoint(string name,int id,string line,string metric, double **  ht,vector <double> **  hr, vector <double> ** hv, int w,int number_of_hashtables ,int number_of_hashfunctions)
 {
 	DataVector * datapoint;
 	if(metric.compare("cosine")==0)
 	{
 		vector <double> v = string_to_stream(line);
-		datapoint = new Cosine(v,"item_id",number_of_hashfunctions,number_of_hashtables,hr);
+		datapoint = new Cosine(name,v,id,number_of_hashfunctions,number_of_hashtables,hr);
 	}			
 	else
 	{
 		vector <double> v = string_to_stream(line);
-		datapoint = new Euclidean(v,"item_id",number_of_hashfunctions,number_of_hashtables,hv,ht,w);
+		datapoint = new Euclidean(name,v,id,number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 	}
 	return datapoint;
 }
@@ -362,7 +362,7 @@ void print_output(int initialization,int assignment,int update,string output_pat
 		output << "{ size : " << cluster_vector[i]->content_accessor().size() << " ,";
 		output << " centroid : ";
 		if(update == 2)
-			output << cluster_vector[i]->centroid_accessor()->name_accessor();
+			output << cluster_vector[i]->centroid_accessor()->id_accessor();
 		cluster_vector[i]->centroid_accessor()->print_vector(output);
 		output << " }"<< endl;
 		output << endl;
@@ -511,6 +511,7 @@ int initialize_ready_tweets_vector(string input_path,string metric,double ** & h
    		cout << "Failed to open file." << endl;
    		return 0;
    	}
+   	int id = 0;
 	while (getline(input, line))  //read dataset line by line
 	{
 		//first vector
@@ -521,8 +522,9 @@ int initialize_ready_tweets_vector(string input_path,string metric,double ** & h
 			initialize_tables(metric,ht,hr,hv,dimension,w,number_of_hashtables,number_of_hashfunctions);
 
 		}
-		datapoint = create_datapoint(line,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
-		ready_tweets_vector.push_back(datapoint);   
+		datapoint = create_datapoint("twitter",id,line,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		ready_tweets_vector.push_back(datapoint); 
+		id++;  
 	}
 	return 1;
 }

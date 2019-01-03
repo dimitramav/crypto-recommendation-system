@@ -62,8 +62,8 @@ vector<double> DataVector::point_accessor()
 	return v;
 }
 
-string DataVector::name_accessor(){
-	return name;
+int DataVector::id_accessor(){
+	return id;
 }
 
 void DataVector::set_point(vector <double> new_v)
@@ -134,18 +134,11 @@ void DataVector::change_assigned(int i)
 }
 /* Euclidean */
 
-Euclidean::Euclidean(vector <double> line,string vector_name,int k, int L,vector <double> ** hv, double ** t, int w)
+Euclidean::Euclidean(string vector_name, vector <double> line,int new_id,int k, int L,vector <double> ** hv, double ** t, int w)
 {
-	/* 1.initialize name */
-	if (vector_name.compare("item_id") == 0)
-	{
-		no_of_dataset++;
-		name="item_id" + to_string(no_of_dataset);
-	}
-	else
-	{
-		name = vector_name;
-	}
+	/* 1.initialize id and name*/
+	vector_name = name;
+	id = new_id;
 	/* 2.initialize vector */
 	
 	v = line;
@@ -173,19 +166,11 @@ Euclidean::~Euclidean(){}
 
 /* Cosine */
 
-Cosine::Cosine(vector <double> line,string vector_name,int k, int L,vector <double> ** hr)
+Cosine::Cosine(string vector_name,vector <double> line,int new_id,int k, int L,vector <double> ** hr)
 {
-	/* 1.initialize name */
-	if (vector_name.compare("item_id") == 0)
-	{
-		no_of_dataset++;
-		name="item_id" + to_string(no_of_dataset);
-	}
-	else
-	{
-		name = vector_name;
-	}
-	
+	/* 1.initialize id and name */
+	name = vector_name;
+	id = new_id;
 	/* 2.initialize vector */
 	
 	v=line;
@@ -243,7 +228,7 @@ void Cluster::print_cluster(ofstream & output)
 {
 	for (auto v : cluster_content)
 	{
-		output << v->name_accessor() << "  ";
+		output << v->id_accessor() << "  ";
 	}
 	return;
 

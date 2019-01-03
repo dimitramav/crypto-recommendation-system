@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
 	vector <Twitter *> twitter_vector;
 	map<int,vector<int>> user_has_tweets;
 	int num_of_users,num_of_cryptos;
-	map< int, vector<double> > uj;
+	map< int, vector<double> > uj,cj;
 	map<int, vector<int>> user_uknown_cryptos;
 	vector <DataVector *> ready_tweets_vector;
 	vector <double> ** hr;
@@ -69,13 +69,15 @@ int main(int argc, char * argv[])
 		for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
 		{
 				string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
-				string name = datapoint->name_accessor();
+				int id = datapoint->id_accessor();
 				twitter_hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
 	/* CREATE TWEETS' CLUSTERS*/
 	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],clustering_parameters["number_of_clusters"],file_parameters["metric"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_vector,ready_tweets_vector,centroid_vector,twitter_hashtables_vector,ht,hv,hr);
-
-	silhouette_vector = silhouette_evaluation(ready_tweets_vector,cluster_vector,file_parameters["metric"]);
-	print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,-1,silhouette_vector,file_parameters["metric"],0,ready_tweets_vector.size());
+	//silhouette_vector = silhouette_evaluation(ready_tweets_vector,cluster_vector,file_parameters["metric"]);
+	//print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,-1,silhouette_vector,file_parameters["metric"],0,ready_tweets_vector.size());
+	/* CREATE Cj VECTOR */
+	construct_cj(num_of_cryptos,cluster_vector,twitter_vector,cj);
+	
 }
