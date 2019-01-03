@@ -74,40 +74,8 @@ int main(int argc, char * argv[])
 		}
 	}
 	/* CREATE TWEETS' CLUSTERS*/
-	clustering(clustering_parameters["initialization"],ready_tweets_vector,cluster_vector,clustering_parameters["number_of_clusters"],file_parameters["metric"])
-	int counter =0;
-	double new_objective_distance = 0.0;
-	double previous_objective_distance = 1.0;
-	//call_initialization(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],ready_tweets_vector,cluster_vector,clustering_parameters["number_of_clusters"],file_parameters["metric"]);
-	for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
-	{
-		if(!centroid_vector.empty() && i==0)
-		{
-			centroid_vector.clear();
-		}
-		centroid_vector.push_back(cluster_vector[i]->centroid_accessor());
-	}
-	do
-	{	
-		reset_distances(ready_tweets_vector);
-		if (counter !=0)
-		{
-			previous_objective_distance = new_objective_distance;
-		}
-		for (unsigned int i = 0;i<cluster_vector.size();i++)
-		{
-			cluster_vector[i]->set_update(0);
-		}
-		new_objective_distance = call_assignment(clustering_parameters["assignment"],clustering_parameters["number_of_hashfunctions"],cluster_vector,file_parameters["metric"],ready_tweets_vector,centroid_vector,twitter_hashtables_vector,clustering_parameters["number_of_hashtables"]);
-		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
-		call_update(clustering_parameters["update"],clustering_parameters["assignment"],cluster_vector,clustering_parameters["number_of_hashfunctions"],clustering_parameters["number_of_hashtables"],ht, hv,hr,clustering_parameters["w"],file_parameters["metric"]);
-		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
-		{
-			centroid_vector[i] = cluster_vector[i]->centroid_accessor();
-		}
-		counter++;
-	}
-	while((new_objective_distance/previous_objective_distance<(double)0.999 && counter<25)||counter==1);
-	//silhouette_vector = silhouette_evaluation(ready_tweets_vector,cluster_vector,file_parameters["metric"]);
-	//print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,1,silhouette_vector,file_parameters["metric"],0,ready_tweets_vector.size());
+	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],clustering_parameters["number_of_clusters"],file_parameters["metric"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_vector,ready_tweets_vector,centroid_vector,twitter_hashtables_vector,ht,hv,hr);
+
+	silhouette_vector = silhouette_evaluation(ready_tweets_vector,cluster_vector,file_parameters["metric"]);
+	print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,-1,silhouette_vector,file_parameters["metric"],0,ready_tweets_vector.size());
 }

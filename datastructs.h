@@ -124,6 +124,8 @@ void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
 int extract_id(string);
+void clustering(int,int ,int ,int ,string metric,int ,int ,int ,vector <Cluster *> & ,vector <DataVector *> & ,vector <DataVector *> & ,HashTable *,double ** ,vector <double> ** ,vector <double> ** );
+
 
 //twitter analysis
 int read_coins(string , vector<string> &);
