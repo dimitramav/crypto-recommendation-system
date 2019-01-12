@@ -134,7 +134,7 @@ int check_coins(string, vector<string> & );
 double calculate_score(string ,map<string,double> & );
 void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int,vector<double> > &);
 void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
-void regulate(map<int,vector<double>> & ,map<int,vector<int>>);
+void regulate(map<int,vector<double>> & ,map<int,vector<int>>,map<int,double> &);
 int initialize_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
 void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map< int, vector<double> >&);
 

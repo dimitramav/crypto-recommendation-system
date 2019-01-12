@@ -29,6 +29,7 @@ int main(int argc, char * argv[])
 	int validate = -1;
 	vector <DataVector *> centroid_vector;
 	vector <double> silhouette_vector; 
+	map<int,double> mean_uj;
 	/* 1. READ ARGUREMENTS */
 	if(read_arguements(argc, argv, input_path,configuration_path,validate,output_path,config_path1,config_path2)==-1)
 		return 1;
@@ -54,7 +55,7 @@ int main(int argc, char * argv[])
 	/* 8. UKNOWN CRYPTOS FOR EACH USER */
 	find_uknown_cryptos(uj,user_uknown_cryptos);
 	/* 9. REGULATE uj */
-	//regulate(uj,user_uknown_cryptos);
+	regulate(uj,user_uknown_cryptos,mean_uj);
 	// PAUSE FOR LATER
 	/* 1.READ VECTOR TWEETS FROM DATASET */
 	if(!initialize_ready_tweets_vector(file_parameters["ready_tweets"],file_parameters["metric"],ht,hr,hv,clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],ready_tweets_vector))

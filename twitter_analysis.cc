@@ -184,12 +184,20 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
    		}
    		//getchar();
    	}
+   	// for(auto user: uj)
+   	// {
+   	// 	cout <<"USER " << user.first << endl;
+   	// 	for(auto crypto: user.second)
+   	// 		cout << crypto << " ";
+   	// 	cout << endl;
+   	// 	cout << endl;
+   	// }
    	return;
- }
+   }
 
    void find_uknown_cryptos(map<int,vector<double>> uj,map<int,vector<int>> & user_uknown_cryptos)
    {
-   		int crypto_num = 0; 
+   	int crypto_num = 0; 
 		for (auto user : uj) //iterate users
 		{
 			for(auto crypto : user.second)  //iterate cryptos of each user
@@ -200,35 +208,47 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 			}
 		}
 		return;
-   }
+	}
 
-    void regulate(map<int,vector<double>> & uj,map<int,vector<int>> user_uknown_cryptos)
-    {
-    	int total_cryptos,unknown_cryptos,known_cryptos;
-    	double total_value=0.0;
-    	double mean_value;
-    	for (auto user:uj)
+	void regulate(map<int,vector<double>> & uj,map<int,vector<int>> user_uknown_cryptos,map<int,double> & mean_uj)
+	{
+		int total_cryptos,unknown_cryptos,known_cryptos;
+		double total_value=0.0;
+		double mean_value;
+    	for (auto user:uj)   //find mean value and store it in the struct mean_uj
     	{
-    	 	total_cryptos = user.second.size();
+    		//cout << "USER " << user.first << endl;
+    		total_cryptos = user.second.size();
     		unknown_cryptos = user_uknown_cryptos.find(user.first)->second.size();
     		known_cryptos = total_cryptos - unknown_cryptos;
     		total_value = 0.0;
     		for (auto value_crypto : user.second)
     		{
-    			cout << value_crypto << " ";
     			if(value_crypto!=10000)
+    			{
+    				//cout << "value_crypto " <<value_crypto << " ";
     				total_value +=value_crypto;
+    			}
     		}
-    		cout << endl;
+    		//cout << "known cryptos " << known_cryptos << endl;
     		mean_value = total_value/known_cryptos;
-    		cout <<"mean_value " << mean_value << endl;
+    		mean_uj[user.first] = mean_value;
     	}
+    	for (auto& user:uj)  //push mean value to uknown cryptos  (10000 becomes mean value for lsh)
+    	{
+    		for(auto& crypto:user.second)
+    		{
+    			if (crypto == 10000)
+    				crypto= mean_uj.at(user.first);
+    		}
+    	}
+    
     }
 
-void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector <Twitter *> twitter_vector,	map< int, vector<double> >& cj)
-{
-	int cluster_tweet_id;
-	Twitter * current_twitter;
+    void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector <Twitter *> twitter_vector,	map< int, vector<double> >& cj)
+    {
+    	int cluster_tweet_id;
+    	Twitter * current_twitter;
 	for(unsigned int cluster =0;cluster<cluster_vector.size();cluster++)  //for each cluster
 	{
 		for (int i=0;i<num_of_cryptos;i++)
@@ -248,17 +268,17 @@ void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector 
 				}
 			}
 			for(auto crypto_num: current_twitter->get_crypto_mentioned())
-   			{
-   				cout << crypto_num << " ";
-   				if(cj[cluster][crypto_num]==10000)
-   					cj[cluster][crypto_num] = 0.0;
-   				cj[cluster][crypto_num]+=current_twitter->get_twitter_score();
-   			}
+			{
+				cout << crypto_num << " ";
+				if(cj[cluster][crypto_num]==10000)
+					cj[cluster][crypto_num] = 0.0;
+				cj[cluster][crypto_num]+=current_twitter->get_twitter_score();
+			}
    			// for(int i=0;i<num_of_cryptos;i++)
    			// {
    			// 	cout << cj[cluster][i] << " ";
    			// }
-   			cout << endl;
+			cout << endl;
 
 		}
 		getchar();
