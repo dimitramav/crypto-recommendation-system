@@ -206,9 +206,9 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 		{
 			cluster_vector[i]->make_external();
 			if(metric.compare("cosine")==0) //cosine metric
-				centroid_point = new Cosine("external_centroid",centroid_vector,id,k,L,hr);
+				centroid_point = new Cosine("external_centroid",centroid_vector,id,0,k,L,hr);
 			else
-				centroid_point = new Euclidean("external_centroid",centroid_vector,id,k,L,hv,t,w);
+				centroid_point = new Euclidean("external_centroid",centroid_vector,id,0,k,L,hv,t,w);
 			cluster_vector[i]->create_external_centroid(centroid_point);
 			id++;
 		}
@@ -548,7 +548,6 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,int P,DataVec
 	map <double,DataVector*> neighbours;
 	set <DataVector * > nearest_neighbours; //to avoid duplicates
 	int counter = 0;
-	cout << "L " << L << endl;
 	for (int i=0;i<L;i++)
 	{
 		
@@ -556,22 +555,14 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,int P,DataVec
 		for (auto v : hashtables[i][key])
 		{
 			double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
-			cout << "distance_b " << distance<< endl;
 			neighbours[distance]=v;
-			//cout << distance << "vs " << radius << endl;
-			//if(counter<P)
-			//{
-				//cout << v->name_accessor() << endl;
-				//neighbours.insert(v);
-			//	counter++;
-			//}
-
 		}
-		for(auto element:neighbours)
+		for(auto element:neighbours)  //keep P nearest neighbours
 		{
-			nearest_neighbours.push_back(element);
+			DataVector * v = element.second;
+			nearest_neighbours.insert(v);
 			counter++;
-			if (counter>P)
+			if (counter>=P)
 				break;
 		}
 	}

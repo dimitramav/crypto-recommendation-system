@@ -296,6 +296,7 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 	vector <double> v,u;
 	double similarity,absolute_similarity;
 	double mean_u,mean_v,relativity_u_v,partial_sum;
+	set <DataVector *> P_neighbours;
 	for(int i=0;i<number_of_hashtables;i++)  //we only have one hashtable
 	{
 
@@ -304,16 +305,15 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 			for (auto z: neighbours.second) //iterate user tweets
 			{
 				user_id = z->id_accessor();//cout << "USER " << user_id << endl;
-				absolute_similarity=0.0;
-				partial_sum = 0.0;
-				rangesearch(number_of_hashtables,number_of_hashfunctions,user_hashtables_vector ,P ,z,metric );
-				getchar();
+				P_neighbours = rangesearch(number_of_hashtables,number_of_hashfunctions,user_hashtables_vector ,P ,z,metric );
+				//cout << v->point_accessor()[unknown_crypto] << " " ;
+				u = z->point_accessor();
+				mean_u = mean_uj[user_id];
 				for(auto unknown_crypto: user_unknown_cryptos[user_id] ) //iterate list of uknown cryptos
 				{
-					//cout << v->point_accessor()[unknown_crypto] << " " ;
-					u = z->point_accessor();
-					mean_u = mean_uj[user_id];
-					for(auto z_neighbour:neighbours.second) //check neighbours of v to find the regulated value
+					absolute_similarity=0.0;
+					partial_sum = 0.0;
+					for(auto z_neighbour:P_neighbours) //check neighbours of v to find the regulated value
 					{
 						neighbour_id = z_neighbour->id_accessor();
 						if(neighbour_id!=user_id) //not same 
@@ -321,10 +321,10 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 							//cout << "USEEEEER " << neighbour_id << endl;
 							if(find(user_unknown_cryptos[neighbour_id].begin(), user_unknown_cryptos[neighbour_id].end(), unknown_crypto) == user_unknown_cryptos[neighbour_id].end())
 							{
-								//cout << unknown_crypto << endl;
 								v = z_neighbour->point_accessor();
 								mean_v=mean_uj[neighbour_id];
 								similarity = inner_product(std::begin(u), std::end(u), std::begin(v), 0.0)/sqrt(mypower(v))*sqrt(mypower(u));
+								cout <<" similarity " << similarity << endl;
 								relativity_u_v =  z_neighbour->point_accessor()[unknown_crypto];
 								absolute_similarity += abs(similarity);
 								partial_sum+=similarity*(relativity_u_v-mean_v);
@@ -333,47 +333,44 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 						}
 					}
 					//new value 
-					z->point_accessor()[unknown_crypto]=mean_u + (1/absolute_similarity) + partial_sum;
+					if(absolute_similarity!=0)
+					{
+						//cout <<"before "<< z->point_accessor()[unknown_crypto] << " ";
+						z->point_mutator(unknown_crypto,mean_u + (1/absolute_similarity) * partial_sum);
+						//z->point_accessor()[unknown_crypto]=mean_u + (1/absolute_similarity) * partial_sum;
+						//cout << "after "<<z->point_accessor()[unknown_crypto] << endl;
+						//getchar();
+					}
+					
 				}
 
 			}
-		}
-		// for(auto neighbours: user_hashtables_vector[i])
-		// {
-		// 	for (auto z: neighbours.second) //iterate user tweets
-		// 	{
-		// 		user_id = z->id_accessor();//cout << "USER " << user_id << endl;
-		// 		absolute_similarity=0.0;
-		// 		partial_sum = 0.0;
-		// 		for(auto unknown_crypto: user_unknown_cryptos[user_id] ) //iterate list of uknown cryptos
-		// 		{
-		// 			//cout << v->point_accessor()[unknown_crypto] << " " ;
-		// 			u = z->point_accessor();
-		// 			mean_u = mean_uj[user_id];
-		// 			for(auto z_neighbour:neighbours.second) //check neighbours of v to find the regulated value
-		// 			{
-		// 				neighbour_id = z_neighbour->id_accessor();
-		// 				if(neighbour_id!=user_id) //not same 
-		// 				{
-		// 					//cout << "USEEEEER " << neighbour_id << endl;
-		// 					if(find(user_unknown_cryptos[neighbour_id].begin(), user_unknown_cryptos[neighbour_id].end(), unknown_crypto) == user_unknown_cryptos[neighbour_id].end())
-		// 					{
-		// 						//cout << unknown_crypto << endl;
-		// 						v = z_neighbour->point_accessor();
-		// 						mean_v=mean_uj[neighbour_id];
-		// 						similarity = inner_product(std::begin(u), std::end(u), std::begin(v), 0.0)/sqrt(mypower(v))*sqrt(mypower(u));
-		// 						relativity_u_v =  z_neighbour->point_accessor()[unknown_crypto];
-		// 						absolute_similarity += abs(similarity);
-		// 						partial_sum+=similarity*(relativity_u_v-mean_v);
-		// 						//cout << z_neighbour->point_accessor()[unknown_crypto] << " " ;
-		// 					}
-		// 				}
-		// 			}
-		// 			//new value 
-		// 			z->point_accessor()[unknown_crypto]=mean_u + (1/absolute_similarity) + partial_sum;
-		// 		}
 
-		// 	}
-		// }
+		}
+	}
+	return;
+}
+
+void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables)
+{
+	int user_id;
+	vector<double> estimated_crypto_values;
+	for (int i=0;i<number_of_hashtables;i++)
+	{
+		for(auto neighbours: user_hashtables_vector[i])
+		{
+			for (auto z: neighbours.second) //iterate user tweets
+			{
+				user_id = z->id_accessor();
+				for(auto unknown_crypto: user_unknown_cryptos[user_id] ) //iterate list of uknown cryptos
+				{
+					estimated_crypto_values.push_back(z->point_accessor()[unknown_crypto]);
+				}
+				sort(estimated_crypto_values.rbegin(), estimated_crypto_values.rend()); //sort in descending order
+				for(int i=0;i<recommend_number;i++)
+				{
+				}
+			}
+		}
 	}
 }

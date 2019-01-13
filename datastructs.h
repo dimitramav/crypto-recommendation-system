@@ -13,7 +13,8 @@ using namespace std;
 
 class DataVector{
 protected:
-	int id;
+	int twitter_id;
+	int user_id;
 	string name;
 	vector<double> v;
 	vector<int> h;
@@ -39,19 +40,20 @@ public:
 	pair <int,double> neighbour_cluster_accessor();
 	int is_assigned();
 	void change_assigned(int);
+	void point_mutator(int,double);
 };
 
 
 class Euclidean : public DataVector{
 	public:
-		Euclidean(string,vector <double>,int,int,int,vector <double> **, double **,int);
+		Euclidean(string,vector <double>,int,int,int,int,vector <double> **, double **,int);
 		~Euclidean();
 	
 };
 
 class Cosine : public DataVector{
 	public:
-		Cosine(string,vector <double>,int,int,int,std::vector<double> **);
+		Cosine(string,vector <double>,int,int,int,int,std::vector<double> **);
 		~Cosine();
 
 };
@@ -140,6 +142,7 @@ int initialize_datapoints_ready_tweets_vector(string ,string ,double ** & ,vecto
 void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map< int, vector<double> >&);
 void initialize_datapoints_uj_vector(map<int,vector<double>> , string ,double ** ,vector <double> ** , vector <double> ** ,int ,int  ,int , vector <DataVector *> &);
 void replace_uknown_cryptos(HashTable * ,map<int,vector<int>> ,map<int,double> ,int,int,int,string);
+void recommend_best_cryptos(HashTable * ,map<int,vector<int>> ,int ,vector<string> ,int);
 
 
 
