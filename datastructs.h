@@ -110,7 +110,7 @@ void find_parameter(string ,map<string,double> & ,map <string,string> & , string
 int initialize_params(string , map <string,double>& , map <string,string>& ,string);
 vector <double> string_to_stream(string );
 void initialize_tables(string,double ** & , vector <double> ** & , vector <double> ** & ,int,int,int,int);
-DataVector * create_datapoint(string ,int,string , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
+DataVector * create_datapoint(string ,int,vector <double> , double ** ,vector <double> ** , vector <double> ** , int ,int ,int);
 int hamming_distance(int, int);
 string string_to_bitstring(string );
 int bitstring_to_int(string ,string );
@@ -125,6 +125,7 @@ void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );
 int extract_id(string);
+double mypower(vector <double> );
 
 //twitter analysis
 int read_coins(string , vector<string> &);
@@ -135,8 +136,10 @@ double calculate_score(string ,map<string,double> & );
 void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int,vector<double> > &);
 void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
 void regulate(map<int,vector<double>> & ,map<int,vector<int>>,map<int,double> &);
-int initialize_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
+int initialize_datapoints_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
 void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map< int, vector<double> >&);
+void initialize_datapoints_uj_vector(map<int,vector<double>> , string ,double ** ,vector <double> ** , vector <double> ** ,int ,int  ,int , vector <DataVector *> &);
+void replace_uknown_cryptos(HashTable * ,map<int,vector<int>> ,map<int,double> ,int,int,int,string);
 
 
 

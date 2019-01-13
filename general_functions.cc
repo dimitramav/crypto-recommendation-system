@@ -224,17 +224,15 @@ void initialize_tables(string metric, double ** & ht,vector <double> ** & hr, ve
 	return;
 }
 
-DataVector * create_datapoint(string name,int id,string line,string metric, double **  ht,vector <double> **  hr, vector <double> ** hv, int w,int number_of_hashtables ,int number_of_hashfunctions)
+DataVector * create_datapoint(string name,int id,vector<double> v,string metric, double **  ht,vector <double> **  hr, vector <double> ** hv, int w,int number_of_hashtables ,int number_of_hashfunctions)
 {
 	DataVector * datapoint;
 	if(metric.compare("cosine")==0)
 	{
-		vector <double> v = string_to_stream(line);
 		datapoint = new Cosine(name,v,id,number_of_hashfunctions,number_of_hashtables,hr);
 	}			
 	else
 	{
-		vector <double> v = string_to_stream(line);
 		datapoint = new Euclidean(name,v,id,number_of_hashfunctions,number_of_hashtables,hv,ht,w);
 	}
 	return datapoint;
@@ -499,10 +497,11 @@ void reset_distances(vector <DataVector *> & dataset_vector)
 
 }
 
-int initialize_ready_tweets_vector(string input_path,string metric,double ** & ht,vector <double> ** & hr, vector <double> ** & hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &ready_tweets_vector)
+int initialize_datapoints_ready_tweets_vector(string input_path,string metric,double ** & ht,vector <double> ** & hr, vector <double> ** & hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &ready_tweets_vector)
 {
 	string line;
 	ifstream input;
+	vector <double> v;
 	input.open(input_path.c_str());  //convert string to const char *
 	DataVector * datapoint;
 	int dimension = 0; 
@@ -522,11 +521,25 @@ int initialize_ready_tweets_vector(string input_path,string metric,double ** & h
 			initialize_tables(metric,ht,hr,hv,dimension,w,number_of_hashtables,number_of_hashfunctions);
 
 		}
-		datapoint = create_datapoint("twitter",id,line,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		v= string_to_stream(line);
+		datapoint = create_datapoint("twitter",id,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
 		ready_tweets_vector.push_back(datapoint); 
 		id++;  
+		v.clear();
 	}
 	return 1;
+}
+
+void initialize_datapoints_uj_vector(map<int,vector<double>> uj, string metric,double **  ht,vector <double> ** hr, vector <double> ** hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &datapoints_uj_vector)
+{
+	DataVector * datapoint;
+	vector <double> v;
+	for(auto user: uj)
+	{
+		v = user.second;
+		datapoint = create_datapoint("user",user.first,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		datapoints_uj_vector.push_back(datapoint); 
+	}
 }
 
 
@@ -544,4 +557,13 @@ int extract_id(string str)
 // convert the remaining text to an integer
 	int id = atoi(str.c_str());
 	return id;
+}
+
+
+double mypower(vector <double> u)
+{
+	double sum = 0.0;
+	for (auto element: u)
+		sum+=element*element;
+	return sum;
 }

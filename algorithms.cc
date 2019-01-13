@@ -541,3 +541,40 @@ void clustering(int initialization,int assignment,int update,int number_of_clust
 	while((new_objective_distance/previous_objective_distance<(double)0.999 && counter<25)||counter==1);
 	return;
 }
+
+
+set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,int P,DataVector *querypoint,string metric)
+{
+	map <double,DataVector*> neighbours;
+	set <DataVector * > nearest_neighbours; //to avoid duplicates
+	int counter = 0;
+	cout << "L " << L << endl;
+	for (int i=0;i<L;i++)
+	{
+		
+		string key= querypoint->key_accessor(i,k);
+		for (auto v : hashtables[i][key])
+		{
+			double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
+			cout << "distance_b " << distance<< endl;
+			neighbours[distance]=v;
+			//cout << distance << "vs " << radius << endl;
+			//if(counter<P)
+			//{
+				//cout << v->name_accessor() << endl;
+				//neighbours.insert(v);
+			//	counter++;
+			//}
+
+		}
+		for(auto element:neighbours)
+		{
+			nearest_neighbours.push_back(element);
+			counter++;
+			if (counter>P)
+				break;
+		}
+	}
+	return nearest_neighbours;
+	
+}

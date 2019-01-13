@@ -13,5 +13,6 @@ double find_lsh_radius(vector <DataVector *> &, string);
 double cube_assignment(list <DataVector *> * ,int ,int ,int , int ,vector <Cluster *> & ,string ,vector <DataVector *> & ,	vector <DataVector *> &);
 int is_second_nearest(double ,DataVector * ,int );
 void clustering(int,int ,int ,int ,string metric,int ,int ,int ,vector <Cluster *> & ,vector <DataVector *> & ,vector <DataVector *> & ,HashTable *,double ** ,vector <double> ** ,vector <double> ** );
+set <DataVector *> rangesearch(int , int ,HashTable * ,int ,DataVector *,string );
 
 
