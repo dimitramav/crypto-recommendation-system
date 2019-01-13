@@ -32,9 +32,12 @@ int main(int argc, char * argv[])
 	vector <DataVector *> centroid_vector;
 	vector <double> silhouette_vector; 
 	map<int,double> mean_uj;
+	int P=20;
+	ofstream output;
 	/* 1. READ ARGUREMENTS */
 	if(read_arguements(argc, argv, input_path,configuration_path,validate,output_path,config_path1,config_path2)==-1)
 		return 1;
+	output.open(output_path.c_str());  //convert string to const char *
 	/* 2. READ CONFIGURATION FILE FOR CLUSTERING PARAMETERS */
 	if(!initialize_params(config_path1,clustering_parameters,file_parameters,"cluster_config"))
 		return 1;	 
@@ -48,7 +51,7 @@ int main(int argc, char * argv[])
 	if(!read_lexicon(file_parameters["lexicon"],lexicon))
 		return 1;
 	/* 6. SAVE TWITTERS IN AN ARRAY */
-	if(!twitter_analysis(input_path,twitter_vector,lexicon,cryptocurrencies,user_has_tweets))
+	if(!twitter_analysis(input_path,twitter_vector,lexicon,cryptocurrencies,user_has_tweets,P))
 		return 1;
 	num_of_users = user_has_tweets.size();
 	num_of_cryptos = cryptocurrencies.size();
@@ -91,8 +94,8 @@ int main(int argc, char * argv[])
 				user_hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
-	replace_uknown_cryptos(user_hashtables_vector,user_uknown_cryptos,mean_uj,clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["P"],file_parameters["metric"]);
-	recommend_best_cryptos(user_hashtables_vector,user_uknown_cryptos,RECOMMEND_A,cryptocurrencies,clustering_parameters["number_of_hashtables"]);
+	replace_uknown_cryptos(user_hashtables_vector,user_uknown_cryptos,mean_uj,clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],P,file_parameters["metric"]);
+	recommend_best_cryptos(user_hashtables_vector,user_uknown_cryptos,RECOMMEND_A,cryptocurrencies,clustering_parameters["number_of_hashtables"],output);
 	// PAUSE FOR LATER
 	//int id = extract_id(ready_tweets_vector[0]->name_accessor());
 	

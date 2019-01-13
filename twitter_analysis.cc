@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <math.h>       /* sqrt */
 
@@ -100,7 +101,7 @@ double calculate_score(string word,map<string,double> & lexicon)
 	}
 }
 
-int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<string,double> & lexicon, vector<string> &coins,map<int,vector<int>> &user_has_tweets)
+int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<string,double> & lexicon, vector<string> &coins,map<int,vector<int>> &user_has_tweets,int & P)
 {
 	ifstream twitter_file;
 	set<int> twitter_has_coins;
@@ -116,6 +117,7 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 	}
 	int word_num=0;
 	int tweet_num = 0;
+	int first_line = 1;
 	while (getline(twitter_file,line))
 	{
 		stringstream linestream(line);
@@ -123,6 +125,23 @@ int twitter_analysis(string input_path, vector<Twitter *> & twitter_vector,map<s
 		total_score = 0;
 		while( getline(linestream, data, '\t'))
 		{
+			if (first_line)
+			{
+				if(data[0]=='P')
+				{
+					string delimiter = ":";
+					size_t pos = 0;
+					while ((pos = line.find(delimiter)) != string::npos)
+					{
+						line.erase(0, pos + delimiter.length());
+						P = stoi(line);
+					}
+					first_line++;
+					continue;
+					
+				}
+			}
+			first_line++;
 			if(word_num == 0)
 			{
 				userid =stoi(data);
@@ -351,12 +370,42 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 	return;
 }
 
-void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables)
+// Function to convert a std::map<K,V> to std::multimap<V,K>
+template<typename K, typename V>
+std::multimap<V,K,greater<V>> invertMap(std::map<K,V> const &map)
 {
+	std::multimap<V,K,greater<V>> multimap;
+
+	for (auto const &pair: map) {
+		multimap.insert(std::make_pair(pair.second, pair.first));
+	}
+
+	return multimap;
+}
+
+string get_cryptoname(int position,vector<string>cryptocurrencies)
+{
+	string alt_coin;
+	stringstream linestream(cryptocurrencies[position]);
+	int counter = 0;
+	while( getline(linestream, alt_coin, '\t'))
+	{
+		if (counter	==4)
+			return alt_coin;
+		counter++;
+
+	}
+	return cryptocurrencies[position].substr(0,cryptocurrencies[position].find('\t'));
+}
+
+void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
+{
+
 	int user_id;
-	vector<double> estimated_crypto_values;
+	map<int,double> estimated_crypto;
 	for (int i=0;i<number_of_hashtables;i++)
 	{
+		output << "LSH Cosine" << endl;
 		for(auto neighbours: user_hashtables_vector[i])
 		{
 			for (auto z: neighbours.second) //iterate user tweets
@@ -364,13 +413,31 @@ void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 				user_id = z->id_accessor();
 				for(auto unknown_crypto: user_unknown_cryptos[user_id] ) //iterate list of uknown cryptos
 				{
-					estimated_crypto_values.push_back(z->point_accessor()[unknown_crypto]);
+					estimated_crypto[unknown_crypto]=z->point_accessor()[unknown_crypto];
 				}
-				sort(estimated_crypto_values.rbegin(), estimated_crypto_values.rend()); //sort in descending order
-				for(int i=0;i<recommend_number;i++)
-				{
-				}
+				multimap<double,int,greater <double>> multimap = invertMap(estimated_crypto);
+				print_recommended_output(output,recommend_number,user_id,multimap,cryptocurrencies);				
 			}
 		}
 	}
 }
+
+
+void print_recommended_output(ofstream & output,int recommend_number,int user_id,multimap<double,int,greater<double>> multimap,vector<string> cryptocurrencies)
+{
+	int counter =0 ;
+	output << user_id << " ";
+	for(int i=0;i<recommend_number;i++)
+	{
+		for(auto pair : multimap)
+		{
+			if(counter == recommend_number)
+				break;
+			output << get_cryptoname(pair.second,cryptocurrencies)<< " " ;
+						//cout << pair.first <<" "<< pair.second << endl;
+			counter ++; 
+		}
+	}
+	output << endl;
+}
+

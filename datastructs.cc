@@ -62,12 +62,8 @@ vector<double> DataVector::point_accessor()
 	return v;
 }
 
-int DataVector::user_id_accessor(){
-	return user_id;
-}
-
-int DataVector::twitter_id_accessor(){
-	return twitter_id;
+int DataVector::id_accessor(){
+	return id;
 }
 
 void DataVector::set_point(vector <double> new_v)
@@ -143,12 +139,11 @@ void DataVector::point_mutator(int pointer, double value)
 }
 /* Euclidean */
 
-Euclidean::Euclidean(string vector_name, vector <double> line,int new_twitter_id,int new_user_id,int k, int L,vector <double> ** hv, double ** t, int w)
+Euclidean::Euclidean(string vector_name, vector <double> line,int new_id,int k, int L,vector <double> ** hv, double ** t, int w)
 {
 	/* 1.initialize id and name*/
 	vector_name = name;
-	twitter_id = new_id;
-	user_id = new_user_id;
+	id = new_id;
 	/* 2.initialize vector */
 	
 	v = line;
@@ -176,12 +171,11 @@ Euclidean::~Euclidean(){}
 
 /* Cosine */
 
-Cosine::Cosine(string vector_name,vector <double> line,int new_twitter_id,int new_user_id,int k, int L,vector <double> ** hr)
+Cosine::Cosine(string vector_name,vector <double> line,int new_id,int k, int L,vector <double> ** hr)
 {
 	/* 1.initialize id and name */
 	name = vector_name;
-	twitter_id = new_twitter_id;
-	user_id = new_user_id;
+	id = new_id;
 	/* 2.initialize vector */
 	
 	v=line;
