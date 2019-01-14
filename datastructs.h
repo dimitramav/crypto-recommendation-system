@@ -141,7 +141,7 @@ int initialize_datapoints_ready_tweets_vector(string ,string ,double ** & ,vecto
 void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map<int,vector<int>>& ,map< int, vector<double> >&);
 void initialize_datapoints_vectors(string,map<int,vector<double>> , string ,double ** ,vector <double> ** , vector <double> ** ,int ,int  ,int , vector <DataVector *> &);
 void replace_uknown_cryptos(vector <DataVector *>,HashTable * ,map<int,vector<int>> ,map<int,double> ,int,int,int,string);
-void recommend_best_cryptos(vector <DataVector *> ,map<int,vector<int>> ,int ,vector<string> ,int,ofstream & );
+void recommend_best_cryptos(double,string,vector <DataVector *> ,map<int,vector<int>> ,int ,vector<string> ,int,ofstream & );
 string get_cryptoname(int ,vector<string>);
 void print_recommended_output(ofstream &,int ,int ,multimap<double,int,greater<double>>,vector<string> );
 void clear_regulated_datapoints_vector(vector<DataVector *>&,map<int,vector<double>>);

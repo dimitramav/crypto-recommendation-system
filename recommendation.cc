@@ -27,38 +27,41 @@ int main(int argc, char * argv[])
 	vector <double> ** hr;
 	vector <double> ** hv;
 	double ** ht;
-	vector <Cluster *> cluster_vector;
+	vector <Cluster *> cluster_tweet_vector,cluster_uj_vector;
 	int validate = -1;
-	vector <DataVector *> centroid_vector;
+	vector <DataVector *> centroid_tweet_vector,centroid_uj_vector;
 	vector <double> silhouette_vector; 
 	map<int,double> mean_uj,mean_cj;
 	int P=20;
 	ofstream output;
-	/* 1. READ ARGUREMENTS */
+
+	srand (time(NULL));
+
+	/* READ ARGUREMENTS */
 	if(read_arguements(argc, argv, input_path,configuration_path,validate,output_path,config_path1,config_path2)==-1)
 		return 1;
 	output.open(output_path.c_str());  //convert string to const char *
-	/* 2. READ CONFIGURATION FILE FOR CLUSTERING PARAMETERS */
+	/* READ CONFIGURATION FILE FOR CLUSTERING PARAMETERS */
 	if(!initialize_params(config_path1,clustering_parameters,file_parameters,"cluster_config"))
 		return 1;	 
-	/* 3. READ CONFIGURATION FILE FOR FILE PARAMETERS */
+	/* READ CONFIGURATION FILE FOR FILE PARAMETERS */
 	if(!initialize_params(config_path2,clustering_parameters,file_parameters,"file_config"))
 		return 1;	
-	/* 4. CREATE COINS ARRAY */ 
+	/* CREATE COINS ARRAY */ 
 	if(!read_coins(file_parameters["coins"],cryptocurrencies))
 		return 1;
 	/* 5. CREATE SENTIMENT DICTIONARY */	
 	if(!read_lexicon(file_parameters["lexicon"],lexicon))
 		return 1;
-	/* 6. SAVE TWITTERS IN AN ARRAY */
+	/* SAVE TWITTERS IN AN ARRAY */
 	if(!twitter_analysis(input_path,twitter_vector,lexicon,cryptocurrencies,user_has_tweets,P))
 		return 1;
 	num_of_users = user_has_tweets.size();
 	num_of_cryptos = cryptocurrencies.size();
-	/* 1.READ VECTOR TWEETS FROM DATASET */     //initialize hv ht hr
+	/* READ VECTOR TWEETS FROM DATASET */     //initialize hv ht hr
 	if(!initialize_datapoints_ready_tweets_vector(file_parameters["ready_tweets"],file_parameters["metric"],ht,hr,hv,clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],ready_tweets_vector))
 	  	return 1;
-	/* 2. CREATE HASHTABLES */
+	/* CREATE HASHTABLES */
 	HashTable twitter_hashtables_vector[ int(clustering_parameters["number_of_hashtables"])];
 	for (unsigned int x=0;x<ready_tweets_vector.size();x++)
 	{
@@ -70,14 +73,44 @@ int main(int argc, char * argv[])
 	 			twitter_hashtables_vector[i][key].push_back(datapoint);
 	 	}
 	}
-	/* CREATE TWEETS' CLUSTERS*/
-	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],clustering_parameters["number_of_clusters"],file_parameters["metric"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_vector,ready_tweets_vector,centroid_vector,twitter_hashtables_vector,ht,hv,hr);
+	/* CREATE TWEETS' CLUSTERS */
+	//cout << "TWEETS' CLUSTERS" << endl;
+	//clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],clustering_parameters["number_of_clusters"],file_parameters["metric"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_tweet_vector,ready_tweets_vector,centroid_tweet_vector,twitter_hashtables_vector,ht,hv,hr);
 	// //silhouette_vector = silhouette_evaluation(ready_tweets_vector,cluster_vector,file_parameters["metric"]);
 	// //print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,-1,silhouette_vector,file_parameters["metric"],0,ready_tweets_vector.size());
+	
+	/*1.A*/
+	/* CREATE Uj VECTOR */
+	construct_uj(num_of_users,num_of_cryptos,twitter_vector,user_has_tweets,uj);
+	/* UKNOWN CRYPTOS FOR EACH USER */
+	find_uknown_cryptos(uj,user_uknown_cryptos);
+	/* REGULATE uj */
+	regulate(uj,user_uknown_cryptos,mean_uj);
+	initialize_datapoints_vectors("real_user",uj, file_parameters["metric"],ht,hr,hv, clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"] ,datapoints_uj_vector);
+	HashTable uj_hashtables_vector[ int(clustering_parameters["number_of_hashtables"])];
+	for (unsigned int x=0;x<datapoints_uj_vector.size();x++)
+	{
+		DataVector * datapoint=datapoints_uj_vector[x];
+		for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
+		{
+				string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
+				int id = datapoint->id_accessor();  // axristo
+				uj_hashtables_vector[i][key].push_back(datapoint);
+		}
+	}
+	//int start_clock=clock();
+	//replace_uknown_cryptos(datapoints_uj_vector,uj_hashtables_vector,user_uknown_cryptos,mean_uj,clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],P,file_parameters["metric"]);
+	//int stop_clock = clock();
+	//double total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
+	recommend_best_cryptos_lsh(total_time,"Cosine LSH",datapoints_uj_vector,user_uknown_cryptos,RECOMMEND_A,cryptocurrencies,clustering_parameters["number_of_hashtables"],output);
+	/* CLEAR UJ STRUCTURE FOR NEXT METHOD */
+	clear_regulated_datapoints_vector(datapoints_uj_vector,uj);
+
+	/* 1B */
 	// /* CREATE Cj VECTOR */
-	construct_cj(num_of_cryptos,cluster_vector,twitter_vector,cj_user_has_tweets,cj);
+	construct_cj(num_of_cryptos,cluster_tweet_vector,twitter_vector,cj_user_has_tweets,cj);
 	/* 8. UKNOWN CRYPTOS FOR EACH VIRTUAL USER */
-	find_uknown_cryptos(cj,cj_user_unknown_cryptos);
+	//find_uknown_cryptos(cj,cj_user_unknown_cryptos);
 	/* 9. REGULATE cj */
 	regulate(cj,cj_user_unknown_cryptos,mean_cj);
 	initialize_datapoints_vectors("virtual_user",cj, file_parameters["metric"],ht,hr,hv, clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"] ,datapoints_cj_vector);
@@ -92,41 +125,16 @@ int main(int argc, char * argv[])
 				cj_hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
-	/* 7. CREATE Uj VECTOR */
-	construct_uj(num_of_users,num_of_cryptos,twitter_vector,user_has_tweets,uj);
-	/* 8. UKNOWN CRYPTOS FOR EACH USER */
-	find_uknown_cryptos(uj,user_uknown_cryptos);
-	/* 9. REGULATE uj */
-	regulate(uj,user_uknown_cryptos,mean_uj);
-	initialize_datapoints_vectors("real_user",uj, file_parameters["metric"],ht,hr,hv, clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"] ,datapoints_uj_vector);
+	start_clock=clock();
 	replace_uknown_cryptos(datapoints_uj_vector,cj_hashtables_vector,user_uknown_cryptos,mean_cj,clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],P,file_parameters["metric"]);
+	stop_clock = clock();
+	total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
+	recommend_best_cryptos_lsh(total_time,"Clustering",datapoints_uj_vector,user_uknown_cryptos,RECOMMEND_B,cryptocurrencies,clustering_parameters["number_of_hashtables"],output);
 	
-	recommend_best_cryptos(datapoints_uj_vector,user_uknown_cryptos,RECOMMEND_B,cryptocurrencies,clustering_parameters["number_of_hashtables"],output);
-	// /* 7. CREATE Uj VECTOR */
-	// construct_uj(num_of_users,num_of_cryptos,twitter_vector,user_has_tweets,uj);
-	// /* 8. UKNOWN CRYPTOS FOR EACH USER */
-	// find_uknown_cryptos(uj,user_uknown_cryptos);
-	// /* 9. REGULATE uj */
-	// regulate(uj,user_uknown_cryptos,mean_uj);
-	// initialize_datapoints_vectors("real_user",uj, file_parameters["metric"],ht,hr,hv, clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"] ,datapoints_uj_vector);
-	// HashTable uj_hashtables_vector[ int(clustering_parameters["number_of_hashtables"])];
-	// for (unsigned int x=0;x<datapoints_uj_vector.size();x++)
-	// {
-	// 	DataVector * datapoint=datapoints_uj_vector[x];
-	// 	for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
-	// 	{
-	// 			string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
-	// 			int id = datapoint->id_accessor();  // axristo
-	// 			uj_hashtables_vector[i][key].push_back(datapoint);
-	// 	}
-	// }
 
-	// //1.A
-	// replace_uknown_cryptos(datapoints_uj_vector,uj_hashtables_vector,user_uknown_cryptos,mean_uj,clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],P,file_parameters["metric"]);
-	// recommend_best_cryptos(datapoints_uj_vector,user_uknown_cryptos,RECOMMEND_A,cryptocurrencies,clustering_parameters["number_of_hashtables"],output);
-	// /*10. CLEAR STRUCTURES FOR NEXT METHOD */
-	// clear_regulated_datapoints_vector(datapoints_uj_vector,uj);
-	
+	/* 2A */
+	cout << "UJ clustering" << endl; 
+	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],clustering_parameters["number_of_clusters"],file_parameters["metric"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_uj_vector,datapoints_uj_vector,centroid_uj_vector,uj_hashtables_vector,ht,hv,hr);
 	// // PAUSE FOR LATER
 	//int id = extract_id(ready_tweets_vector[0]->name_accessor());
 	

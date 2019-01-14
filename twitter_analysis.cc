@@ -406,11 +406,12 @@ string get_cryptoname(int position,vector<string>cryptocurrencies)
 	return cryptocurrencies[position].substr(0,cryptocurrencies[position].find('\t'));
 }
 
-void recommend_best_cryptos(vector <DataVector *> datapoints_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
+void recommend_best_cryptos(double total_time,string method,vector <DataVector *> datapoints_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
 {
 
 	int user_id;
 	map<int,double> estimated_crypto;
+	output << method << endl;
 	for (auto z: datapoints_vector) //iterate user tweets
 	{
 		user_id = z->id_accessor();
@@ -421,7 +422,8 @@ void recommend_best_cryptos(vector <DataVector *> datapoints_vector,map<int,vect
 		multimap<double,int,greater <double>> multimap = invertMap(estimated_crypto);
 		print_recommended_output(output,recommend_number,user_id,multimap,cryptocurrencies);				
 	}
-		
+	output << "Execution time " << total_time << endl;
+	output << endl;	
 	
 }
 
