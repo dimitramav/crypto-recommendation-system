@@ -138,8 +138,8 @@ void construct_uj(int , int , vector<Twitter *> , map<int,vector<int>> ,map< int
 void find_uknown_cryptos(map<int,vector<double>>,map<int,vector<int>> &);
 void regulate(map<int,vector<double>> & ,map<int,vector<int>>,map<int,double> &);
 int initialize_datapoints_ready_tweets_vector(string ,string ,double ** & ,vector <double> ** & , vector <double> ** & ,int ,int  ,int , vector <DataVector *> &);
-void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map< int, vector<double> >&);
-void initialize_datapoints_uj_vector(map<int,vector<double>> , string ,double ** ,vector <double> ** , vector <double> ** ,int ,int  ,int , vector <DataVector *> &);
+void construct_cj(int,vector <Cluster *> , vector <Twitter *> ,	map<int,vector<int>>& ,map< int, vector<double> >&);
+void initialize_datapoints_vectors(string,map<int,vector<double>> , string ,double ** ,vector <double> ** , vector <double> ** ,int ,int  ,int , vector <DataVector *> &);
 void replace_uknown_cryptos(HashTable * ,map<int,vector<int>> ,map<int,double> ,int,int,int,string);
 void recommend_best_cryptos(HashTable * ,map<int,vector<int>> ,int ,vector<string> ,int,ofstream & );
 string get_cryptoname(int ,vector<string>);

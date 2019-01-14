@@ -178,11 +178,11 @@ int initialize_params(string configuration_path, map <string,double>& clustering
 		cout << "Cannot allocate memory for the array" << endl;
 		return 0;
 	}
-	if(pow(2.0,clustering_parameters["k"])<clustering_parameters["number_of_clusters"])
+	/*if(pow(2.0,clustering_parameters["k"])<clustering_parameters["number_of_clusters"])
 	{
 		cout << "Number of clusters needs to be smaller" << endl;
 		return 0;
-	}
+	}*/
 	return 1;
 }
 
@@ -530,14 +530,14 @@ int initialize_datapoints_ready_tweets_vector(string input_path,string metric,do
 	return 1;
 }
 
-void initialize_datapoints_uj_vector(map<int,vector<double>> uj, string metric,double **  ht,vector <double> ** hr, vector <double> ** hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &datapoints_uj_vector)
+void initialize_datapoints_vectors(string name,map<int,vector<double>> uj, string metric,double **  ht,vector <double> ** hr, vector <double> ** hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &datapoints_uj_vector)
 {
 	DataVector * datapoint;
 	vector <double> v;
 	for(auto user: uj)
 	{
 		v = user.second;
-		datapoint = create_datapoint("user",user.first,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		datapoint = create_datapoint(name,user.first,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
 		datapoints_uj_vector.push_back(datapoint); 
 	}
 }

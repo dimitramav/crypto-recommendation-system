@@ -205,6 +205,23 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
    		}
    		//getchar();
    	}
+   	for(auto user: uj)  //erase vector like [ 0 inf inf 0]
+   	{
+   	 	cout <<"USER " << user.first << endl;
+   	 	int empty=1;
+   	 	for(auto crypto: user.second)
+   	 	{
+   	 		cout << crypto <<" ";
+   	 		if(crypto!=10000 && crypto !=0)
+   	 		{
+   	 			empty = 0; 
+   	 		}
+   	 	}
+   		if(empty == 1)
+   		{
+   			uj.erase(user.first);
+   		}
+   	}
    	// for(auto user: uj)
    	// {
    	// 	cout <<"USER " << user.first << endl;
@@ -267,7 +284,7 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
     	
     }
 
-    void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector <Twitter *> twitter_vector,	map< int, vector<double> >& cj)
+    void construct_cj(int num_of_cryptos, vector <Cluster *> cluster_vector, vector <Twitter *> twitter_vector,	map< int,vector<int>> & cj_user_has_tweets, map<int,vector<double> >& cj)
     {
     	int cluster_tweet_id;
     	Twitter * current_twitter;
@@ -280,6 +297,7 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 		for(auto cluster_twitter: cluster_vector[cluster]->content_accessor())  //for each cluster's vector
 		{
 			cluster_tweet_id=cluster_twitter->id_accessor();
+			cj_user_has_tweets[cluster].push_back(cluster_tweet_id);  //list of tweets of virtual user
 			//cout << "twitter in cluster with id " << cluster_tweet_id << " has crypto ";
 			for(auto twitter:twitter_vector )    //twitter reference from cluster to twitter vector to calculate score
 			{
@@ -308,7 +326,7 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 }
 
 
-void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,map<int,double> mean_uj,int number_of_hashtables,int number_of_hashfunctions,int P,string metric)
+void replace_uknown_cryptos(HashTable * uj_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,map<int,double> mean_uj,int number_of_hashtables,int number_of_hashfunctions,int P,string metric)
 {
 	int user_id;
 	int neighbour_id;
@@ -319,12 +337,12 @@ void replace_uknown_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 	for(int i=0;i<number_of_hashtables;i++)  //we only have one hashtable
 	{
 
-		for(auto neighbours: user_hashtables_vector[i])
+		for(auto neighbours: uj_hashtables_vector[i])
 		{
 			for (auto z: neighbours.second) //iterate user tweets
 			{
 				user_id = z->id_accessor();//cout << "USER " << user_id << endl;
-				P_neighbours = rangesearch(number_of_hashtables,number_of_hashfunctions,user_hashtables_vector ,P ,z,metric );
+				P_neighbours = rangesearch(number_of_hashtables,number_of_hashfunctions,uj_hashtables_vector ,P ,z,metric );
 				//cout << v->point_accessor()[unknown_crypto] << " " ;
 				u = z->point_accessor();
 				mean_u = mean_uj[user_id];
@@ -398,7 +416,7 @@ string get_cryptoname(int position,vector<string>cryptocurrencies)
 	return cryptocurrencies[position].substr(0,cryptocurrencies[position].find('\t'));
 }
 
-void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
+void recommend_best_cryptos(HashTable * uj_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
 {
 
 	int user_id;
@@ -406,7 +424,7 @@ void recommend_best_cryptos(HashTable * user_hashtables_vector,map<int,vector<in
 	for (int i=0;i<number_of_hashtables;i++)
 	{
 		output << "LSH Cosine" << endl;
-		for(auto neighbours: user_hashtables_vector[i])
+		for(auto neighbours: uj_hashtables_vector[i])
 		{
 			for (auto z: neighbours.second) //iterate user tweets
 			{
