@@ -522,7 +522,7 @@ int initialize_datapoints_ready_tweets_vector(string input_path,string metric,do
 
 		}
 		v= string_to_stream(line);
-		datapoint = create_datapoint("twitter",id,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
+		datapoint = create_datapoint("ready_tweet",id,v,metric,ht,hr,hv,w,number_of_hashtables,number_of_hashfunctions);
 		ready_tweets_vector.push_back(datapoint); 
 		id++;  
 		v.clear();
