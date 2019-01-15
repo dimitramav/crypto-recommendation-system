@@ -122,7 +122,7 @@ void print_output(int,int,int,string,vector <Cluster * > &,int,vector <double> &
 void call_initialization(int , vector <DataVector *> &, vector <Cluster *> &,int ,string );
 void call_update(int ,int , vector <Cluster *> & ,int ,int ,double ** ,vector <double> ** , vector <double> ** ,int ,string);
 double call_assignment(int, int, vector <Cluster *>,string ,vector <DataVector *> ,vector <DataVector*> ,HashTable * ,int);
-void delete_data(vector <Cluster*> & ,vector <Cluster*> &,vector <Cluster*> &, vector <DataVector *> &, vector <DataVector *> &,vector <DataVector *> &,vector <double> ** ,double ** ,vector <double> ** ,int L);
+void delete_data(vector <Twitter*>&,vector <Cluster*> & ,vector <Cluster*> &,vector <Cluster*> &, vector <DataVector *> &, vector <DataVector *> &,vector <DataVector *> &,vector <double> ** ,double ** ,vector <double> ** ,int L);
 void change_data(vector <Cluster *> &,vector <DataVector *> &);
 void reset_distances(vector <DataVector *> & dataset_vector);
 map <DataVector *,double> trueNN(vector <DataVector *> , DataVector * ,string );

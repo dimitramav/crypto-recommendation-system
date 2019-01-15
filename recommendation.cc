@@ -71,7 +71,6 @@ int main(int argc, char * argv[])
 		for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
 		{
 	 			string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
-	 			int id = datapoint->id_accessor();
 	 			twitter_hashtables_vector[i][key].push_back(datapoint);
 	 	}
 	}
@@ -82,6 +81,7 @@ int main(int argc, char * argv[])
 	// //print_output(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],output_path,cluster_vector,-1,silhouette_vector,"cosine",0,ready_tweets_vector.size());
 	
 	/*1.A*/
+	cout << "1A" <<endl;
 	/* CREATE Uj VECTOR */
 	construct_uj(num_of_users,num_of_cryptos,twitter_vector,user_has_tweets,uj);
 	/* UKNOWN CRYPTOS FOR EACH USER */
@@ -96,7 +96,6 @@ int main(int argc, char * argv[])
 		for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
 		{
 				string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
-				int id = datapoint->id_accessor();  // axristo
 				uj_hashtables_vector[i][key].push_back(datapoint);
 		}
 	}
@@ -109,6 +108,7 @@ int main(int argc, char * argv[])
 	clear_regulated_datapoints_vector(datapoints_uj_vector,uj);
 
 	/* 1B */
+	cout << "1B" << endl;
 	/* CREATE Cj VECTOR */
 	construct_cj(num_of_cryptos,cluster_tweet_vector,twitter_vector,cj_user_has_tweets,cj);
 	/* 8. UKNOWN CRYPTOS FOR EACH VIRTUAL USER */
@@ -123,7 +123,6 @@ int main(int argc, char * argv[])
 	  	for (int i=0;i< clustering_parameters["number_of_hashtables"]; i++)
 	  	{
 	  			string key = datapoint->key_accessor(i,clustering_parameters["number_of_hashfunctions"]);
-	  			int id = datapoint->id_accessor();  // axristo
 	  			cj_hashtables_vector[i][key].push_back(datapoint);
 	  	}
 	}
@@ -135,7 +134,7 @@ int main(int argc, char * argv[])
 	clear_regulated_datapoints_vector(datapoints_uj_vector,uj);
 
 	/* 2A */
-	cout << "UJ clustering" << endl; 
+	cout << "2Α UJ clustering" << endl; 
 	int uj_clusters = int(num_of_users / P);
 	//initialize_datapoints_vectors("real_user",uj, "euclidean",ht,hr,hv, clustering_parameters["w"],clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"] ,euclidean_datapoints_uj_vector);
 	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],uj_clusters,"euclidean",clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_uj_vector,datapoints_uj_vector,centroid_uj_vector,uj_hashtables_vector,ht,hv,hr);
@@ -147,7 +146,7 @@ int main(int argc, char * argv[])
 	clear_regulated_datapoints_vector(datapoints_uj_vector,uj);
 
 	// /* 2Β */
-	cout << "CJ clustering" << endl; 
+	cout << "2Β CJ clustering" << endl; 
 	int cj_clusters = int(datapoints_cj_vector.size() / P);
 	clustering(clustering_parameters["initialization"],clustering_parameters["assignment"],clustering_parameters["update"],cj_clusters,"cosine",clustering_parameters["number_of_hashtables"],clustering_parameters["number_of_hashfunctions"],clustering_parameters["w"],cluster_cj_vector,datapoints_cj_vector,centroid_cj_vector,cj_hashtables_vector,ht,hv,hr);
 	start_clock=clock();
@@ -155,6 +154,6 @@ int main(int argc, char * argv[])
 	stop_clock = clock();
 	total_time=(stop_clock-start_clock)/double(CLOCKS_PER_SEC);
 	recommend_best_cryptos(total_time,"Clustering",datapoints_uj_vector,user_uknown_cryptos,RECOMMEND_B,cryptocurrencies,output);
-	delete_data(cluster_tweet_vector,cluster_cj_vector,cluster_uj_vector, datapoints_uj_vector, datapoints_cj_vector,ready_tweets_vector,hr,ht,hv,clustering_parameters["number_of_hashtables"]);
+	delete_data(twitter_vector,cluster_tweet_vector,cluster_cj_vector,cluster_uj_vector, datapoints_uj_vector, datapoints_cj_vector,ready_tweets_vector,hr,ht,hv,clustering_parameters["number_of_hashtables"]);
 
 }

@@ -427,11 +427,16 @@ double call_assignment(int assignment, int k, vector <Cluster *> cluster_vector,
 	return new_objective_distance;
 }	
 
-void delete_data(vector <Cluster*> &twitter_vector_cluster,vector <Cluster*> & cj_vector_cluster,vector <Cluster*> & uj_vector_cluster, vector <DataVector *> &uj_dataset_vector, vector <DataVector *> &cj_dataset_vector,vector <DataVector *> &ready_tweets_vector,vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
+void delete_data(vector <Twitter*> & twitter_vector,vector <Cluster*> &twitter_vector_cluster,vector <Cluster*> & cj_vector_cluster,vector <Cluster*> & uj_vector_cluster, vector <DataVector *> &uj_dataset_vector, vector <DataVector *> &cj_dataset_vector,vector <DataVector *> &ready_tweets_vector,vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
 {
 	vector <DataVector *> ::iterator dataset_iterator;
 	vector <Cluster *> :: iterator cluster_iterator;
+	vector <Twitter *> :: iterator twitter_iterator;
 	//delete dataset
+	for(twitter_iterator = twitter_vector.begin(); twitter_iterator != twitter_vector.end(); twitter_iterator++) 
+	{   
+		delete *(twitter_iterator);
+	}
 	for(dataset_iterator = uj_dataset_vector.begin(); dataset_iterator != uj_dataset_vector.end(); dataset_iterator++) 
 	{   
 		delete *(dataset_iterator);

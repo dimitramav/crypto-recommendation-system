@@ -92,7 +92,7 @@ void random_initialization(vector <DataVector *> & dataset_vector,vector <Cluste
 	set<int>::iterator it;
 
 	srand(time(NULL));
-	while (random_k.size() < k )
+	while (unassigned int random_k.size() < k )
 	{
 		random_k.insert(rand() % dataset_vector.size());
 	}
@@ -530,7 +530,7 @@ void clustering(int initialization,int assignment,int update,int number_of_clust
 			cluster_vector[i]->set_update(0);
 		}
 		new_objective_distance = call_assignment(assignment,number_of_hashfunctions,cluster_vector,metric,ready_tweets_vector,centroid_vector,twitter_hashtables_vector,number_of_hashtables);
-		cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
+		//cout << "objective_distance " << new_objective_distance << "/"<< previous_objective_distance<< endl;	
 		call_update(update,assignment,cluster_vector,number_of_hashfunctions,number_of_hashtables,ht, hv,hr,w,metric);
 		for(unsigned int i=0;i<cluster_vector.size();i++)  //initialize vector with centroids for compatibility reasons
 		{
