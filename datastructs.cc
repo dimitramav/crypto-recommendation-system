@@ -312,7 +312,14 @@ int Cluster::is_updated()
 	return modified;
 }
 
-
+int Cluster::vector_in_cluster(DataVector * v)
+{
+	list<DataVector *>::iterator iter = std::find (cluster_content.begin(), cluster_content.end(), v);
+	if (iter == cluster_content.end())
+		return 0;
+	else
+		return 1;
+}
 
 /* Twitter */
 

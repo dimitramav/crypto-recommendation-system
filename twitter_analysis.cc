@@ -324,7 +324,7 @@ void construct_uj(int num_of_users, int num_of_cryptos, vector<Twitter *> twitte
 }
 
 
-void replace_uknown_cryptos(vector <DataVector *> dataset_vector,HashTable * uj_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,map<int,double> mean_uj,int number_of_hashtables,int number_of_hashfunctions,int P,string metric)
+void replace_unknown_cryptos_lsh(vector <DataVector *> dataset_vector,HashTable * uj_hashtables_vector,map<int,vector<int>> user_unknown_cryptos,map<int,double> mean_uj,int number_of_hashtables,int number_of_hashfunctions,int P,string metric)
 {
 	int user_id;
 	int neighbour_id;
@@ -335,7 +335,7 @@ void replace_uknown_cryptos(vector <DataVector *> dataset_vector,HashTable * uj_
 	for (auto z: dataset_vector) //iterate user tweets
 	{
 		user_id = z->id_accessor();//cout << "USER " << user_id << endl;
-		P_neighbours = rangesearch(number_of_hashtables,number_of_hashfunctions,uj_hashtables_vector ,P ,z,metric );
+		P_neighbours = rangesearch_lsh(number_of_hashtables,number_of_hashfunctions,uj_hashtables_vector ,P ,z,metric );
 		//cout << v->point_accessor()[unknown_crypto] << " " ;
 		u = z->point_accessor();
 		mean_u = mean_uj[user_id];
@@ -378,6 +378,59 @@ void replace_uknown_cryptos(vector <DataVector *> dataset_vector,HashTable * uj_
 	return;
 }
 
+void replace_unknown_cryptos_clustering(vector<DataVector*> dataset_vector,vector <Cluster * > cluster_vector,map<int,vector<int>> user_unknown_cryptos,map<int,double> mean_uj,int P,string metric)
+{
+	int user_id;
+	int neighbour_id;
+	vector <double> v,u;
+	double similarity,absolute_similarity;
+	double mean_u,mean_v,relativity_u_v,partial_sum;
+	set <DataVector *> P_neighbours;
+	for (auto z: dataset_vector) //iterate user tweets
+	{
+		user_id = z->id_accessor();//cout << "USER " << user_id << endl;
+		P_neighbours = rangesearch_clustering(cluster_vector ,P ,z,metric );
+		//cout << v->point_accessor()[unknown_crypto] << " " ;
+		u = z->point_accessor();
+		mean_u = mean_uj[user_id];
+		for(auto unknown_crypto: user_unknown_cryptos[user_id] ) //iterate list of uknown cryptos
+		{
+			absolute_similarity=0.0;
+			partial_sum = 0.0;
+			for(auto z_neighbour:P_neighbours) //check neighbours of v to find the regulated value
+			{
+				neighbour_id = z_neighbour->id_accessor();
+				if(neighbour_id!=user_id) //not same 
+				{
+							//cout << "USEEEEER " << neighbour_id << endl;
+					if(find(user_unknown_cryptos[neighbour_id].begin(), user_unknown_cryptos[neighbour_id].end(), unknown_crypto) == user_unknown_cryptos[neighbour_id].end())
+					{
+						v = z_neighbour->point_accessor();
+						mean_v=mean_uj[neighbour_id];
+						similarity = 1/(1+vectors_distance(metric,v,u));
+						relativity_u_v =  z_neighbour->point_accessor()[unknown_crypto];
+						absolute_similarity += abs(similarity);
+						partial_sum+=similarity*(relativity_u_v-mean_v);
+						//cout << z_neighbour->point_accessor()[unknown_crypto] << " " ;
+					}
+				}
+			}
+			//new value 
+			if(absolute_similarity!=0)
+			{
+				//cout <<"before "<< z->point_accessor()[unknown_crypto] << " ";
+				z->point_mutator(unknown_crypto,mean_u + (1/absolute_similarity) * partial_sum);
+				//z->point_accessor()[unknown_crypto]=mean_u + (1/absolute_similarity) * partial_sum;
+				//cout << "after "<<z->point_accessor()[unknown_crypto] << endl;
+				//getchar();
+			}
+					
+		}
+
+	}
+
+}
+
 // Function to convert a std::map<K,V> to std::multimap<V,K>
 template<typename K, typename V>
 std::multimap<V,K,greater<V>> invertMap(std::map<K,V> const &map)
@@ -406,7 +459,7 @@ string get_cryptoname(int position,vector<string>cryptocurrencies)
 	return cryptocurrencies[position].substr(0,cryptocurrencies[position].find('\t'));
 }
 
-void recommend_best_cryptos(double total_time,string method,vector <DataVector *> datapoints_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,int number_of_hashtables,ofstream & output)
+void recommend_best_cryptos(double total_time,string method,vector <DataVector *> datapoints_vector,map<int,vector<int>> user_unknown_cryptos,int recommend_number,vector<string> cryptocurrencies,ofstream & output)
 {
 
 	int user_id;
@@ -450,7 +503,7 @@ void clear_regulated_datapoints_vector(vector<DataVector *>& datapoints_vector ,
 {
 	for(auto user: uj)
 	{
-		for(int i=0;i<datapoints_vector.size();i++)
+		for(unsigned int i=0;i<datapoints_vector.size();i++)
 		{
 			if(datapoints_vector[i]->id_accessor() == user.first)  //datavector id and user id are the same
 			{

@@ -206,9 +206,9 @@ void lloyds_update(vector <Cluster *> & cluster_vector,int k,int L,double ** t,v
 		{
 			cluster_vector[i]->make_external();
 			if(metric.compare("cosine")==0) //cosine metric
-				centroid_point = new Cosine("external_centroid",centroid_vector,id,0,k,L,hr);
+				centroid_point = new Cosine("external_centroid",centroid_vector,id,k,L,hr);
 			else
-				centroid_point = new Euclidean("external_centroid",centroid_vector,id,0,k,L,hv,t,w);
+				centroid_point = new Euclidean("external_centroid",centroid_vector,id,k,L,hv,t,w);
 			cluster_vector[i]->create_external_centroid(centroid_point);
 			id++;
 		}
@@ -543,7 +543,7 @@ void clustering(int initialization,int assignment,int update,int number_of_clust
 }
 
 
-set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,int P,DataVector *querypoint,string metric)
+set <DataVector *> rangesearch_lsh(int L, int k,HashTable * hashtables,int P,DataVector *querypoint,string metric)
 {
 	map <double,DataVector*> neighbours;
 	set <DataVector * > nearest_neighbours; //to avoid duplicates
@@ -568,4 +568,35 @@ set <DataVector *> rangesearch(int L, int k,HashTable * hashtables,int P,DataVec
 	}
 	return nearest_neighbours;
 	
+}
+
+set <DataVector *> rangesearch_clustering(vector <Cluster *> cluster_vector ,int P,DataVector * querypoint,string metric)
+{
+	map <double,DataVector*> neighbours;
+	set <DataVector * > nearest_neighbours; //to avoid duplicates
+	int counter = 0;
+	for (unsigned int cluster_num = 0;cluster_num<cluster_vector.size();cluster_num++)
+	{
+
+		if(cluster_vector[cluster_num]->vector_in_cluster(querypoint))  //find cluster that contains vector 
+		{
+			for (auto v : cluster_vector[cluster_num]->content_accessor())
+			{
+				double distance=vectors_distance(metric,querypoint->point_accessor(),v->point_accessor());
+				neighbours[distance]=v;
+			}
+			break;	
+		}	
+	}
+	for(auto element:neighbours)  //keep P nearest neighbours
+	{
+		{
+			DataVector * v = element.second;
+			nearest_neighbours.insert(v);
+			counter++;
+			if (counter>=P)
+				break;
+		}
+	}
+	return nearest_neighbours;
 }
