@@ -35,60 +35,60 @@ double ** make_table_hnumber(double ** ht,int w,int rows,int columns)
 		for(int x=0; x<columns; x++)
 			ht[i][x]=distribution(generator);
 		return ht;
-}
-
-void print_table_hnumber(double ** ht,int rows,int columns)
-{
-	for (int i=0; i<rows; i++)
-	{
-		for(int x=0; x<columns; x++)
-			cout << ht[i][x]<< "   ";
-		cout << endl;
 	}
-	return;	
-}
 
-vector <double> ** make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
-{	
-	hv = new vector <double> * [rows];
-	for(int i = 0;i<rows;i++)
-		hv[i] = new vector <double> [columns];
-	default_random_engine generator;
-	normal_distribution<double> distribution(0.0,1.0);
-	for (int i=0; i<rows; i++)
-		for(int x=0; x<columns; x++)
-		{
-			for (int z=0; z<dimension; z++)
-			{
-				hv[i][x].push_back(distribution(generator));  				
-			}
-		}
-		return hv;
-}
-
-void print_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
-{	
-	for (int i=0; i<rows; i++)
-		for(int x=0; x<columns; x++)
-		{
-			for (int z=0; z<dimension; z++)
-			{	
-				copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
-			}
-
-		}			
-		return;
-}
-
-
-int find_dimension(string line)
-{
-	stringstream ss(line);
-	int d =0;
-	istringstream input(line);
-	string word;
-	while(getline(input,word,','))
+	void print_table_hnumber(double ** ht,int rows,int columns)
 	{
+		for (int i=0; i<rows; i++)
+		{
+			for(int x=0; x<columns; x++)
+				cout << ht[i][x]<< "   ";
+			cout << endl;
+		}
+		return;	
+	}
+
+	vector <double> ** make_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
+	{	
+		hv = new vector <double> * [rows];
+		for(int i = 0;i<rows;i++)
+			hv[i] = new vector <double> [columns];
+		default_random_engine generator;
+		normal_distribution<double> distribution(0.0,1.0);
+		for (int i=0; i<rows; i++)
+			for(int x=0; x<columns; x++)
+			{
+				for (int z=0; z<dimension; z++)
+				{
+					hv[i][x].push_back(distribution(generator));  				
+				}
+			}
+			return hv;
+		}
+
+		void print_table_hvector( vector <double> ** hv, int dimension, int rows, int columns)
+		{	
+			for (int i=0; i<rows; i++)
+				for(int x=0; x<columns; x++)
+				{
+					for (int z=0; z<dimension; z++)
+					{	
+						copy(hv[i][x].begin(),hv[i][x].end(),std::ostream_iterator<double>(std::cout, "  " ));
+					}
+
+				}			
+				return;
+			}
+
+
+			int find_dimension(string line)
+			{
+				stringstream ss(line);
+				int d =0;
+				istringstream input(line);
+				string word;
+				while(getline(input,word,','))
+				{
     	d++;  //number of commas is the dimension of the vector
     }
     return d;
@@ -96,19 +96,19 @@ int find_dimension(string line)
 
 
 void find_parameter(string line,map<string,double> & clustering_parameters,map <string,string> & file_parameters, string config)
-   {
-   	string delimiter = ":";
-   	size_t pos = 0;
-   	string parameter_name;
-   	while ((pos = line.find(delimiter)) != string::npos) {
-   		parameter_name = line.substr(0, pos);
-   		line.erase(0, pos + delimiter.length());
-   	}
-   	if(config.compare("file_config")==0)
-   	{
-   		file_parameters[parameter_name] = line;
-   	}
-   	else
+{
+	string delimiter = ":";
+	size_t pos = 0;
+	string parameter_name;
+	while ((pos = line.find(delimiter)) != string::npos) {
+		parameter_name = line.substr(0, pos);
+		line.erase(0, pos + delimiter.length());
+	}
+	if(config.compare("file_config")==0)
+	{
+		file_parameters[parameter_name] = line;
+	}
+	else
 		clustering_parameters[parameter_name] = stod(line); //insert parameter in the map
 	return;
 }
@@ -205,22 +205,18 @@ vector <double> string_to_stream(string line)// convert line to a stream
 
 }
 
-void initialize_tables(string metric, double ** & ht,vector <double> ** & hr, vector <double> ** & hv, int dimension,int w,int number_of_hashtables ,int number_of_hashfunctions)
+void initialize_tables(double ** & ht,vector <double> ** & hr, vector <double> ** & hv, int dimension,int w,int number_of_hashtables ,int number_of_hashfunctions)
 {
-	if(metric.compare("cosine")==0) //cosine metric
-	{
 				/* 2. TABLE FOR r */	
-		hr = make_table_hvector(hr,dimension,number_of_hashtables,number_of_hashfunctions);
-	}
-	else
-	{
+	hr = make_table_hvector(hr,dimension,number_of_hashtables,number_of_hashfunctions);
+
 				/* 2. TABLE FOR t */
-		ht = make_table_hnumber(ht,w,number_of_hashtables,number_of_hashfunctions);
+	ht = make_table_hnumber(ht,w,number_of_hashtables,number_of_hashfunctions);
 				//print_table_hnumber(ht,1,parameters["number_of_hashfunctions"]);
 				/*4. TABLE FOR v */
-		hv = make_table_hvector(hv,dimension,number_of_hashtables,number_of_hashfunctions);
+	hv = make_table_hvector(hv,dimension,number_of_hashtables,number_of_hashfunctions);
 				//print_table_hvector(hv,dimension,1,parameters["number_of_hashfunctions"]);
-	}
+	
 	return;
 }
 
@@ -313,20 +309,20 @@ int read_arguements(int argc, char ** argv, string & input_path, string & config
 		switch (option)
 		{
 			case 'd':
-				input_path = optarg;
-				break;
+			input_path = optarg;
+			break;
 			case 'a':
-				validate = 1;
-				break;
+			validate = 1;
+			break;
 			case 'o':
-				output_path = optarg;
-				break;
+			output_path = optarg;
+			break;
 			case 'c':
-				config_path1 = optarg;
-				break;
+			config_path1 = optarg;
+			break;
 			case 'e':
-				config_path2 = optarg;
-				break;
+			config_path2 = optarg;
+			break;
 			default: 
 			cout << "Given parameters are wrong. Try again." << endl;
 			return -1;
@@ -431,86 +427,101 @@ double call_assignment(int assignment, int k, vector <Cluster *> cluster_vector,
 	return new_objective_distance;
 }	
 
-void delete_data( vector <DataVector *> &dataset_vector,string metric, vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
+void delete_data(vector <Cluster*> &twitter_vector_cluster,vector <Cluster*> & cj_vector_cluster,vector <Cluster*> & uj_vector_cluster, vector <DataVector *> &uj_dataset_vector, vector <DataVector *> &cj_dataset_vector,vector <DataVector *> &ready_tweets_vector,vector <double> ** hr,double ** ht,vector <double> ** hv,int L)
 {
 	vector <DataVector *> ::iterator dataset_iterator;
+	vector <Cluster *> :: iterator cluster_iterator;
 	//delete dataset
-   	for(dataset_iterator = dataset_vector.begin(); dataset_iterator != dataset_vector.end(); dataset_iterator++) 
-   	{   
-   		delete *(dataset_iterator);
-   	}
- 	if(metric.compare("cosine")==0) //cosine metric
- 	{
- 		//delete r table
- 		for(int i = 0;i<L;i++)
- 		{
- 			delete [] hr[i];
- 		}
-
- 	}
- 	else
- 	{
- 		//delete t & v table
- 		for(int i = 0;i<L;i++)
- 		{
- 			delete [] ht[i];
- 			delete [] hv[i];
- 		}
- 		delete [] ht;
- 		delete [] hv;
+	for(dataset_iterator = uj_dataset_vector.begin(); dataset_iterator != uj_dataset_vector.end(); dataset_iterator++) 
+	{   
+		delete *(dataset_iterator);
 	}
-	return;
+	for(dataset_iterator = cj_dataset_vector.begin(); dataset_iterator != cj_dataset_vector.end(); dataset_iterator++) 
+	{   
+		delete *(dataset_iterator);
+	}
+	for(dataset_iterator = ready_tweets_vector.begin(); dataset_iterator != ready_tweets_vector.end(); dataset_iterator++) 
+	{   
+		delete *(dataset_iterator);
+	}
+	for(cluster_iterator = uj_vector_cluster.begin(); cluster_iterator != uj_vector_cluster.end(); cluster_iterator++) 
+	{   
+		delete *(cluster_iterator);
+	}
+	for(cluster_iterator = cj_vector_cluster.begin(); cluster_iterator != cj_vector_cluster.end(); cluster_iterator++) 
+	{   
+		delete *(cluster_iterator);
+	}
+	for(cluster_iterator = twitter_vector_cluster.begin(); cluster_iterator != twitter_vector_cluster.end(); cluster_iterator++) 
+	{   
+		delete *(cluster_iterator);
+	}
+ 	//delete r table
+ 	for(int i = 0;i<L;i++)
+ 	{
+ 		delete [] hr[i];
+ 	}
 
-}
+ 	//delete t & v table
+ 	for(int i = 0;i<L;i++)
+ 	{
+ 		delete [] ht[i];
+ 		delete [] hv[i];
+ 	}
+ 	delete [] ht;
+ 	delete [] hv;
+ 	return;
 
-void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dataset_vector)
-{
-	vector <Cluster *> ::iterator cluster_iterator;
+ }
+
+ void change_data(vector <Cluster *> & cluster_vector,vector <DataVector *> & dataset_vector)
+ {
+ 	vector <Cluster *> ::iterator cluster_iterator;
 	//delete clusters
-	for(cluster_iterator = cluster_vector.begin(); cluster_iterator != cluster_vector.end(); cluster_iterator++)    
-   	{
-   		if((*(cluster_iterator))->is_external()==1)
-   		{
-   			delete (*(cluster_iterator))->centroid_accessor();
-   		}
-   		delete *(cluster_iterator);
-   	}
-   	cluster_vector.clear();
+ 	for(cluster_iterator = cluster_vector.begin(); cluster_iterator != cluster_vector.end(); cluster_iterator++)    
+ 	{
+ 		if((*(cluster_iterator))->is_external()==1)
+ 		{
+ 			delete (*(cluster_iterator))->centroid_accessor();
+ 		}
+ 		delete *(cluster_iterator);
+ 	}
+ 	cluster_vector.clear();
    	//redefine datavectors
-   	for (unsigned int i=0;i<dataset_vector.size();i++)
-   	{
-   		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
-		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
-   	}
+ 	for (unsigned int i=0;i<dataset_vector.size();i++)
+ 	{
+ 		dataset_vector[i]->change_cluster_number(-1,numeric_limits<double>::max());
+ 		dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits<double>::max());
+ 	}
 
-   	return;
-}
+ 	return;
+ }
 
-void reset_distances(vector <DataVector *> & dataset_vector)
-{
-	for (unsigned int i=0;i<dataset_vector.size();i++)
-   	{
-   		dataset_vector[i]->change_assigned(0);
+ void reset_distances(vector <DataVector *> & dataset_vector)
+ {
+ 	for (unsigned int i=0;i<dataset_vector.size();i++)
+ 	{
+ 		dataset_vector[i]->change_assigned(0);
    		//dataset_vector[i]->change_neighbour_cluster(-1,numeric_limits <double> ::max());
-   	}
-   	return;
+ 	}
+ 	return;
 
-}
+ }
 
-int initialize_datapoints_ready_tweets_vector(string input_path,string metric,double ** & ht,vector <double> ** & hr, vector <double> ** & hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &ready_tweets_vector)
-{
-	string line;
-	ifstream input;
-	vector <double> v;
+ int initialize_datapoints_ready_tweets_vector(string input_path,string metric,double ** & ht,vector <double> ** & hr, vector <double> ** & hv,int w,int number_of_hashtables ,int number_of_hashfunctions, vector <DataVector *> &ready_tweets_vector)
+ {
+ 	string line;
+ 	ifstream input;
+ 	vector <double> v;
 	input.open(input_path.c_str());  //convert string to const char *
 	DataVector * datapoint;
 	int dimension = 0; 
-   	if (!input.is_open())
-   	{
-   		cout << "Failed to open file." << endl;
-   		return 0;
-   	}
-   	int id = 0;
+	if (!input.is_open())
+	{
+		cout << "Failed to open file." << endl;
+		return 0;
+	}
+	int id = 0;
 	while (getline(input, line))  //read dataset line by line
 	{
 		//first vector
@@ -518,7 +529,7 @@ int initialize_datapoints_ready_tweets_vector(string input_path,string metric,do
 		{
 			dimension=find_dimension(line);
 			/* 5. INITIALIZE TABLES */
-			initialize_tables(metric,ht,hr,hv,dimension,w,number_of_hashtables,number_of_hashfunctions);
+			initialize_tables(ht,hr,hv,dimension,w,number_of_hashtables,number_of_hashfunctions);
 
 		}
 		v= string_to_stream(line);
@@ -543,21 +554,6 @@ void initialize_datapoints_vectors(string name,map<int,vector<double>> uj, strin
 }
 
 
-int extract_id(string str)
-{
-	size_t i = 0;
-	for ( ; i < str.length(); i++ )
-	{ 
-		if ( isdigit(str[i]) ) break; 
-	}
-
-	// remove the first chars, which aren't digits
-	str = str.substr(i, str.length() - i );
-
-// convert the remaining text to an integer
-	int id = atoi(str.c_str());
-	return id;
-}
 
 
 double mypower(vector <double> u)
